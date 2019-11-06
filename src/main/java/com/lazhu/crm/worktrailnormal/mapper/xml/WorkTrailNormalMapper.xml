@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.worktrailnormal.mapper.WorkTrailNormalMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_work_trail_normal
+		<where>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.salerRecordId != null and cm.salerRecordId != ''">
+				and saler_record_id = #{cm.salerRecordId}
+			</if>
+			<if test="cm.beforeFlowId != null and cm.beforeFlowId != ''">
+				and before_flow_id = #{cm.beforeFlowId}
+			</if>
+			<if test="cm.afterFlowId != null and cm.afterFlowId != ''">
+				and after_flow_id = #{cm.afterFlowId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 统计查询 -->
+	<select id="queryTotal" resultType="java.util.Map">
+		select t.manager_id managerId,t.saler_id salerId, u.user_name userName,sum(t.time_length) timeLength, 
+		CAST(t.customer_id AS char) customerId,
+		<!-- 推广拨打数-推广客户拨打数 -->
+		sum(t.before_flow_id=101) call101, count(DISTINCT(if(t.before_flow_id = 101,t.customer_id,null))) cus101,
+		<!-- 未接拨打数-未接客户拨打数 -->
+		sum(t.before_flow_id=201) call201, count(DISTINCT(if(t.before_flow_id = 201,t.customer_id,null))) cus201,
+		<!-- 可聊拨打数-可聊客户拨打数 -->
+		sum(t.before_flow_id=301) call301, count(DISTINCT(if(t.before_flow_id = 301,t.customer_id,null))) cus301,
+		<!-- 意向拨打数-意向客户拨打数 -->
+		sum(t.before_flow_id=501) call501, count(DISTINCT(if(t.before_flow_id = 501,t.customer_id,null))) cus501,
+		<!-- 抽取拨打数-抽取客户拨打数 -->
+		sum(t.before_flow_id=601) call601, count(DISTINCT(if(t.before_flow_id = 601,t.customer_id,null))) cus601,
+		<!-- 未明确拨打数-未明确客户拨打数 -->
+		sum(t.before_flow_id=701) call701, count(DISTINCT(if(t.before_flow_id = 701,t.customer_id,null))) cus701,
+		<!-- 可聊变动 -->
+		count(DISTINCT(if(t.before_flow_id = 301 and t.after_flow_id != 301, t.customer_id, null))) before301,
+		count(DISTINCT(if(t.before_flow_id != 301 and t.after_flow_id = 301, t.customer_id, null))) after301,
+		<!-- 意向变动 -->
+		count(DISTINCT(if(t.before_flow_id = 501 and t.after_flow_id != 501, t.customer_id, null))) before501,
+		count(DISTINCT(if(t.before_flow_id != 501 and t.after_flow_id = 501, t.customer_id, null))) after501
+		from crm_work_trail_normal t, sys_user u
+		<where>
+			t.saler_id != -1 and u.id = t.saler_id and u.enable_ = 1 and u.locked_ = 0
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and t.create_time &gt;= #{cm.startTime}
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and t.create_time &lt;= #{cm.endTime}
+			</if>
+		</where>
+		GROUP BY t.saler_id
+	</select>
+	
+	<select id="queryBySalerRecordId" resultType="java.lang.Long">
+		select id from crm_work_trail_normal where saler_record_id = #{salerRecordId}
+	</select>
+	
+</mapper>

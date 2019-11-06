@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <script src="/js/excel/xlsx.full.min.js"></script>
+	<style type="text/css">
+	  .el-table .bh-row .el-table_1_column_4{
+	    background: red;
+	  }
+	  .el-table .success-row .el-table_1_column_4{
+	    background: #50BFFF;
+	  }
+	  /* .el-table .isnew-row .el-table_1_column_5{
+	    background: #F66;
+	  } */
+	.el-upload__input{
+		display:none!important;
+	}
+	 .el-table .refund-row {
+	    background: #FFC1C1;
+	  }
+</style>
+</head>
+<body>
+<div id="app">
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+	    		<el-row>
+	    		<el-form-item label="客户姓名" style="font-size: 13px;" prop="customerName">
+		    		<el-input style="width:100px;" size="small" style="width:100px" v-model="searchParams.customerName" placeholder="客户姓名" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="手机号码" style="font-size: 13px;" prop="mobile">
+		    		<el-input style="width:100px;" size="small" style="width:100px" v-model="searchParams.mobile" placeholder="手机号" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="来源渠道" style="font-size: 13px;" prop="fromInfo">
+		    		<lz-dic-select style="width:120px" dic-type="RESOURCE_CHANNEL" v-model="searchParams.fromInfo"></lz-dic-select>
+		    	</el-form-item>
+		    	</el-row>
+		    	<el-row>
+		    	<el-form-item label="签单开始日期" style="font-size: 13px;" prop="startTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat1" v-model="searchParams.startTime"></el-date-picker>
+		    	</el-form-item>
+				<el-form-item label="签单结束日期" style="font-size: 13px;" prop="endTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat2" v-model="searchParams.endTime"></el-date-picker>
+		    	</el-form-item>
+		    	<el-form-item label="审核开始日期" style="font-size: 13px;" prop="auditTime1">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat3" v-model="searchParams.auditTime1"></el-date-picker>
+		    	</el-form-item>
+				<el-form-item label="审核结束日期" style="font-size: 13px;" prop="auditTime2">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat4" v-model="searchParams.auditTime2"></el-date-picker>
+		    	</el-form-item>
+		    	<el-form-item label="所有人" style="font-size: 13px;" prop="subordinate">
+		    		<lz-dic-select style="width:100px;" dic-type="SUBORDINATES" v-model="searchParams.subordinate"></lz-dic-select>
+		    	</el-form-item>
+		    	<el-form-item label="是否长险" style="font-size: 13px;" prop="isLongTerm">
+		    		<lz-dic-select style="width:60px;" v-model="searchParams.isLongTerm" dic-type="YESORNO"></lz-dic-select>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+                </el-row>
+            </el-form>
+        </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+				  :row-class-name="tableRowClassName"
+        >
+        
+        	<el-table-column
+                    type="selection"
+                    prop="id"
+                    align="center"
+            >
+            </el-table-column>
+                
+            <el-table-column
+            		fixed="left"
+                    prop="salerName"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    fixed="left"
+                    prop="insuranceId"
+                    min-width="280"
+                    v-bind:show-overflow-tooltip="true"
+                    label="产品名称"
+                    align="left"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="ALLPRODUCT" :dic-code="scope.row.insuranceId"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+            		fixed="left"
+                    prop="amount"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="缴费金额"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="signStatus"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单状态"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="SIGNSTATUS" :dic-code="scope.row.signStatus"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="auditTime"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="审核时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.auditTime)}}</span>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="customerName"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户手机"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="belong"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="市场部归属"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="fromInfo"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="auditReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="审核意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="complianceReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="合规意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="微信记录"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<a target="_blank" :href="scope.row.submitCode">{{weChatChatExist(scope.row.submitCode)}}</a>
+                	</template>
+                </el-table-column>
+                <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="80"
+                    align="center">
+                <template scope="scope">
+                	<el-button size="small" type="warning" @click="showEditDialog(scope.row.id)">编辑</el-button>
+                </template>
+            </el-table-column>
+
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+    	<el-col :span="8">
+            <el-button size="small" type="danger" @click="delBatch" v-show="isAdmin">删除</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+<el-dialog title="编辑" size="large" top="3%" :visible.sync="editFormVisible">
+	<el-row>
+        <el-form ref="editForm" :model="entity" :rules="rules">
+        <el-input size="small" v-model="entity.id" v-show="false" ></el-input>
+    	<el-col :span="8">
+        <el-form-item label="姓名：" label-width="120px" prop="customerName">
+    			<el-input style="width:150px;" size="small" v-model="entity.customerName" placeholder="客户姓名" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<!-- <el-col :span="6">
+	        <el-form-item label="手机号：" label-width="120px" prop="fuzzyMobile">
+	    		<span>{{ entity.fuzzyMobile }}</span>
+	        </el-form-item>
+        </el-col> -->
+    	<el-col :span="8">
+	        <el-form-item label="性别：" label-width="120px" prop="sex">
+				<lz-dic-select style="width:150px;" v-model="entity.sex" dic-type="SEX"></lz-dic-select>
+			</el-form-item>
+        </el-col>
+    	<el-col :span="8">
+	        <el-form-item label="年龄：" label-width="120px" prop="age">
+				<el-input type="number" style="width:150px;" size="small" v-model="entity.age" placeholder="年龄" ></el-input>
+			</el-form-item>
+        </el-col>
+        <el-col :span="24" style="border:1px dashed #50BFFF;"></el-col>
+    	<el-col :span="12">
+	        <el-form-item label="产品名称：" label-width="120px" prop="insuranceId">
+	        	<lz-dic-select-broaden v-model="entity.insuranceId" dic-type="ALLPRODUCT"></lz-dic-select-broaden>
+	        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        	<el-form-item label="保单号：" label-width="120px" prop="policyNo">
+	    		<el-input style="width:320px;" size="small" v-model="entity.policyNo" placeholder="申请保险保单号" ></el-input>
+	        </el-form-item>
+        </el-col>
+		<el-col :span="24" style="border:1px dashed #50BFFF;"></el-col>
+    	<el-col :span="8">
+	        <el-form-item label="缴费金额：" label-width="120px" prop="amount">
+	    		<el-input type="number" style="width:150px;" size="small" v-model="entity.amount" placeholder="缴费金额" ></el-input>
+	        </el-form-item>
+	    </el-col>
+	    <el-col :span="8">
+	        <el-form-item label="缴费年限：" label-width="120px" prop="amountTerm">
+	    		<el-input type="number" style="width:150px;" size="small" v-model="entity.amountTerm" placeholder="缴费年限" ></el-input>
+	        </el-form-item>
+	    </el-col>
+	    <el-col :span="8">
+        	<el-form-item label="保障额度(元)：" label-width="130px" prop="insuranceLimit">
+    			<el-input type="number" style="width:140px;" size="small" v-model="entity.insuranceLimit" placeholder="保障额度(元)"></el-input>
+        	</el-form-item>
+        </el-col>
+		<el-col :span="24" style="border:1px dashed #50BFFF;"></el-col>
+    	<el-col :span="12">
+	        <el-form-item label="投保人姓名：" label-width="120px" prop="policyholderName">
+				<el-input style="width:150px;" size="small" v-model="entity.policyholderName" placeholder="投保人姓名" ></el-input>
+			</el-form-item>
+		</el-col>
+		<el-col :span="12">
+	        <el-form-item label="投保人证件：" label-width="120px" prop="policyholderIdentifyNumber">
+	    		<el-input style="width:150px;" size="small" v-model="entity.policyholderIdentifyNumber" placeholder="投保人证件号码" ></el-input>
+	        </el-form-item>
+		</el-col>
+		<el-col :span="12">
+			<el-form-item label="投保人职业：" label-width="120px" style="font-size: 13px;" prop="policyholderProfession">
+				<el-input style="width:150px;" size="small" v-model="entity.policyholderProfession" placeholder="职业" ></el-input>
+			</el-form-item>
+		</el-col>
+		<el-col :span="12">
+			<el-form-item label="投保人关系：" label-width="120px" style="font-size: 13px;" prop="relation">
+				<lz-dic-select style="width:150px;" v-model="entity.relation" dic-type="RELATION"></lz-dic-select>
+			</el-form-item>
+		</el-col>
+		<el-col :span="12">
+	        <el-form-item label="被保人姓名：" label-width="120px" prop="insurederName">
+				<el-input style="width:150px;" size="small" v-model="entity.insurederName" placeholder="被保人姓名" ></el-input>
+	        </el-form-item>
+		</el-col>
+		<el-col :span="12">
+		    <el-form-item label="被保人证件：" label-width="120px" style="font-size: 13px;" prop="insurederIdentifyNumber">
+		    	<el-input style="width:150px;" size="small" v-model="entity.insurederIdentifyNumber" placeholder="被保人证件号码" ></el-input>
+		    </el-form-item>
+		</el-col>
+        <el-col :span="24" style="border:1px dashed #50BFFF;"></el-col>
+        <!-- <el-col :span="8">
+	        <el-form-item label="业务员：" label-width="120px" style="font-size: 13px;" prop="salerId">
+				<el-select
+			    v-model="entity.salerId"
+			    filterable
+			    remote
+			    placeholder="业务员姓名"
+			    style="width:150px"
+			    :remote-method="selectSaler"
+				:loading="loading">
+					<el-option
+						v-for="item in salerMap"
+						:key="item.value"
+						:label="item.label"
+						:value="item.value">
+					</el-option>
+				</el-select>
+		    </el-form-item>
+		</el-col>
+
+    	<el-col :span="8">
+	        <el-form-item label="升级人员：" label-width="120px" prop="upgraderId">
+	    		<el-input style="width:150px;" type="number" size="small" v-model="entity.upgraderId" placeholder="升级人员ID" ></el-input>
+	        </el-form-item>
+		</el-col> -->
+
+    	<el-col :span="8">
+        	<el-form-item label="消息提交码：" label-width="120px" prop="submitCode">
+		    	<el-input style="width:150px;" size="small" v-model="entity.submitCode" placeholder="签单消息提交码"  @blur="checkSubmitCode(entity.submitCode)"></el-input>
+		    </el-form-item>
+        </el-col>
+		<!-- <el-col :span="24" style="border:1px dashed #50BFFF;"></el-col> -->
+    	<el-col :span="8">
+	        <el-form-item label="审核日期：" label-width="120px" style="font-size: 13px;" prop="auditTime">
+		    	<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat" v-model="entity.auditTime"></el-date-picker>
+		    </el-form-item>
+        </el-col>
+        
+    	<el-col :span="8">
+	        <el-form-item label="修改口令：" label-width="120px" style="font-size: 13px;" prop="word">
+		    	<el-input style="width:150px;" type="number" size="small" v-model="entity.word" placeholder="修改口令" ></el-input>
+		    </el-form-item>
+        </el-col>
+    	
+        </el-form>
+	</el-row>
+	<el-row style="margin-top:10px;" type="flex" justify="center">
+		<el-button size="large" type="danger"  @click="getWord">获取口令</el-button>
+		<el-button size="large" type="info"  @click="save">保存订单信息</el-button>
+	</el-row>
+</el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="/business/signApply/signApplyChange.js"></script>
+</html>

@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.sys.mapper.SysUserMapper">
+	<!-- 查询列表-->
+	<select id="selectIdPage" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+		<where>
+			<if test="cm.account != null and cm.account != ''">
+				 and account_ = #{cm.account}
+			</if>
+			<if test="cm.password != null and cm.password != ''">
+				 and password_ like CONCAT('%',#{cm.password},'%')
+			</if>
+			<if test="cm.phone != null and cm.phone != ''">
+				 and phone_ like CONCAT('%',#{cm.phone},'%')
+			</if>
+			<if test="cm.sex != null and cm.sex != ''">
+				 and sex_ = #{cm.sex}
+			</if>
+			<if test="cm.education != null and cm.education!= ''">
+				 and education_ = #{cm.education}
+			</if>
+			<if test="cm.userName != null and cm.userName != ''">
+				 and user_name like CONCAT('%',#{cm.userName},'%')
+			</if>
+			<if test="cm.userNameList != null">
+				 and user_name in 
+					<foreach item="item" index="index" collection="cm.userNameList" 
+                         open="(" separator="," close=")">
+                         #{item}
+                	</foreach>
+			</if>
+			<if test="cm.avatar != null and cm.avatar != ''">
+				 and avatar_ = #{cm.avatar}
+			</if>
+			<if test="cm.userType != null and cm.userType != ''">
+				 and user_type = #{cm.userType}
+			</if>
+			<if test="cm.deptId != null and cm.deptId != ''">
+				 and dept_id = #{cm.deptId}
+			</if>
+			<if test="cm.locked != null">
+				 and locked_ = #{cm.locked}
+			</if>
+			<if test="cm.parentId != null and cm.parentId != ''">
+				 and parent_id = #{cm.parentId}
+			</if>
+			<if test="cm.parentId2 != null and cm.parentId2 != ''">
+				 and parent_id = #{cm.parentId2}
+			</if>
+			<if test="cm.parentIds != null">
+			  and parent_id in 
+				<foreach item="item" index="index" collection="cm.parentIds" 
+                        open="(" separator="," close=")">
+                        #{item}
+               	</foreach>
+			</if>
+			<if test="cm.userGroup != null and cm.userGroup != ''">
+				 and user_group = #{cm.userGroup}
+			</if>
+			<if test="cm.userGroup2 != null and cm.userGroup2 != ''">
+				 and user_group in (88002001,88002002)
+			</if>
+			<if test="cm.userGroup3 != null and cm.userGroup3 != ''">
+				 and user_group in (88002008,88002009)
+			</if>
+			<if test="cm.remark != null and cm.remark != ''">
+				 and remark_ = #{cm.remark}
+			</if>
+			<if test="cm.createTime != null and cm.createTime != ''">
+				 and create_time = #{cm.createTime}
+			</if>
+			<if test="cm.createBy != null and cm.createBy != ''">
+				 and create_by = #{cm.createBy}
+			</if>
+			<if test="cm.updateTime != null and cm.updateTime != ''">
+				 and update_time = #{cm.updateTime}
+			</if>
+			<if test="cm.updateBy != null and cm.updateBy != ''">
+				 and update_by = #{cm.updateBy}
+			</if>
+			<if test="cm.dingId != null and cm.dingId != ''">
+				 and ding_id = #{cm.dingId}
+			</if>
+			<if test="cm.keyword != null">
+				and (account_ like CONCAT('%',#{cm.keyword},'%') or user_name like CONCAT('%',#{cm.keyword},'%') or phone_ like CONCAT('%',#{cm.keyword},'%'))
+			</if>
+				 and enable_ = 1
+				 
+			<!-- 人事中心-员工信息管理,只查询市场部员工，queryChildrenDeptId是创建的函数，用来递归查询部门ID，2就是市场部 -->
+			 <if test="cm.hr != null and cm.hr != ''">
+				 and FIND_IN_SET(dept_id, queryChildrenDeptId(2))
+			</if>
+		</where>
+		ORDER BY locked_ asc,user_group desc,id desc
+	</select>
+	
+	<select id="queryByAccount" resultType="java.lang.Long">
+		select count(id) from sys_user
+		<where>
+			<if test="account != null and account != ''">
+				account_ = #{account}
+			</if>
+			<if test="userId != null and userId != ''">
+				and id != #{userId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="querySUBById" resultType="java.lang.Long">
+		select id from sys_user
+		<where>
+			<if test="userId != null and userId != ''">
+				parent_id = #{userId}
+				and enable_ = 1
+				and locked_ = 0
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryAllSenior" resultType="java.lang.Long">
+		select id from sys_user
+		where position_ = 1
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="queryAllMan" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002001
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="queryAllManAndManager" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group in (88002001,88002002)
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="queryAllManager" resultType="java.lang.Long">
+		select id from sys_user
+		where 	user_group = 88002002
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="queryAllDirector" resultType="java.lang.Long">
+		select id from sys_user
+		where 	user_group = 88002003
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="selectIdByClubNum" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002666
+			and enable_ = 1
+			and locked_ = 0
+			and club_num = (select min(club_num) from sys_user where user_group = 88002666 and enable_ = 1 and locked_ = 0) limit 1
+	</select>
+		
+	<select id="selectIdByAllotClubNum" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = #{userGroup}
+			AND is_allot_resource = 1
+			AND parent_id NOT IN (
+				1145584170724626432,
+				1145587109295951872
+			) 
+			and enable_ = 1
+			and locked_ = 0
+			AND allot_club_num = (
+				SELECT
+					min(allot_club_num)
+				FROM
+					sys_user
+				WHERE
+					user_group = #{userGroup}
+				AND parent_id NOT IN (
+					1145584170724626432,
+					1145587109295951872
+				)
+				AND is_allot_resource = 1
+				AND enable_ = 1
+				AND locked_ = 0
+			)
+			LIMIT 1
+	</select>
+	
+	<select id="queryByGroupAndDept" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = #{userGroup} 
+			 and dept_id in 
+				<foreach item="item" index="index" collection="deptId" 
+                        open="(" separator="," close=")">
+                        #{item}
+               	</foreach>
+			and enable_ = 1
+			AND is_allot_resource = 1
+			and locked_ = 0
+			and allot_club_num = (
+				select min(allot_club_num) from sys_user where user_group = #{userGroup} 
+				and is_allot_resource = 1
+				and dept_id in 
+					<foreach item="item" index="index" collection="deptId" 
+	                        open="(" separator="," close=")">
+	                        #{item}
+	               	</foreach> 
+	            and enable_ = 1 and locked_ = 0
+            ) limit 1
+	</select>
+		
+	<select id="selectIdByAllotClubNumInDept" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+		WHERE user_group = #{userGroup}
+			AND parent_id IN (SELECT id
+				FROM sys_user
+				WHERE parent_id = #{userId})
+			AND enable_ = 1
+			AND is_allot_resource = 1
+			AND locked_ = 0
+			AND allot_club_num = (
+				SELECT MIN(allot_club_num)
+				FROM sys_user
+				WHERE user_group = #{userGroup}
+					AND enable_ = 1
+					and is_allot_resource = 1
+					AND locked_ = 0
+					AND parent_id IN (SELECT id
+						FROM sys_user
+						WHERE parent_id = #{userId})
+				)
+	</select>
+	<select id="selectUpgradeManagerIdByAllotClubNum" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+		WHERE user_group = 88002667
+			AND enable_ = 1
+			AND locked_ = 0
+			ORDER BY allot_club_num asc
+	</select>
+	
+	<select id="queryAllUpgradeMan" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002666
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+		
+	<select id="queryAllUpgradeManager" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002667
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+		
+	<select id="queryAllUpgradeDirector" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002668
+			and enable_ = 1
+			and locked_ = 0
+	</select>
+	
+	<select id="selectIdByAllotStairNum" resultType="java.lang.Long">
+		select id from sys_user
+		where user_group = 88002666
+			and enable_ = 1
+			and locked_ = 0
+			and allot_stair_num = (select min(allot_stair_num) from sys_user where user_group = 88002666 and enable_ = 1 and locked_ = 0)
+	</select>
+		
+	<select id="querySalerAllotResourceMin" resultType="java.lang.Long">
+		select id
+		from sys_user
+		where user_group = 88002001
+		and enable_ = 1
+		and locked_ = 0
+		and is_allot_resource = 1
+		and disable_allot_resource = 0
+		and allot_resource_max - control_allot_resource_num > 0
+		order by control_allot_resource_num asc
+	</select>
+		
+	<select id="queryManagerSub" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+			WHERE enable_ = 1 AND locked_ = 0
+			AND id IN (
+				SELECT id FROM sys_user
+				WHERE 
+					user_group IN (88002001, 88002002)
+					AND (id = #{userId} OR parent_id = #{userId})
+			)
+			ORDER BY user_group DESC
+			
+	</select>
+		
+	<select id="queryDirectorSub" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+			WHERE enable_ = 1 AND locked_ = 0
+			AND (
+				id IN (
+					SELECT id FROM sys_user
+					WHERE
+						user_group IN (88002001, 88002002, 88002003)
+					AND (id = #{userId} OR parent_id = #{userId})
+				)
+				OR parent_id IN (
+					SELECT id FROM sys_user
+					WHERE
+						user_group IN (88002001, 88002002, 88002003)
+					AND (id = #{userId} OR parent_id = #{userId})
+				)
+			)
+			ORDER BY user_group DESC
+	</select>
+		
+	<select id="queryMinisterSub" resultType="java.lang.Long">
+		SELECT id,user_name userName FROM sys_user
+				WHERE enable_ = 1 AND locked_ = 0
+				AND FIND_IN_SET(id,getBusinessLst(#{userId}))
+	</select>
+		
+	<select id="queryAllNormalBusiness" resultType="java.lang.Long">
+		select id from sys_user
+			where enable_ = 1 and locked_ = 0
+			and user_group &gt;= 88002001
+			and user_group &lt;= 88002005
+	</select>
+		
+	<select id="queryAllAllotResource" resultType="java.lang.Long">
+		select id from sys_user
+			where is_allot_resource = 1
+			and disable_allot_resource = 0
+	</select>
+		
+	<select id="queryAllUser" resultType="java.lang.Long">
+		select id from sys_user
+	</select>
+		
+	<select id="queryAgentNo" resultType="java.lang.Long">
+		select id from sys_user where agent_no = #{agentNo} and enable_ = 1 and locked_ = 0
+	</select>
+	
+	<update id="resetUserAllotNum">
+		update sys_user 
+		set allot_resource_num = 0,
+		control_allot_resource_num = 0,
+		allot_resource_max = #{num},
+		is_allot_resource = 0,
+		extract_num = 5
+		where user_group = 88002001
+	</update>
+
+	<update id="stopUserAllot">
+		update sys_user 
+		set is_allot_resource = 0,allot_resource_max = 0
+		where user_group = 88002001
+	</update>
+	
+	<update id="recycleUserRewardCommit">
+		update sys_user 
+			set
+				over_reward_resource_num = over_reward_resource_num - #{num},
+				control_allot_resource_num = control_allot_resource_num - #{num}
+			where over_reward_resource_num > 0
+				and is_allot_resource = 1
+				and disable_allot_resource = 0
+	</update>
+
+	<update id="resetUserRewardNum">
+		update sys_user 
+		set reward_resource_num = 0,
+		over_reward_resource_num = 0
+	</update>
+	
+	<select id="queryTResourceRatio" resultType="java.lang.Integer">
+		select floor(
+						(select count(id) from sys_user
+							where enable_ = 1 and locked_ = 0
+							and user_group = 88002001 
+							and is_allot_resource = 1
+							and disable_allot_resource = 0
+						)
+						* 100/count(id)
+					) from sys_user
+		where enable_ = 1 and locked_ = 0
+		and user_group = 88002001
+	</select>
+	
+	<update id="updateResourceAllot" parameterType="java.util.List">
+            update sys_user 
+            set allot_resource_num = allot_resource_num + 1,
+            	control_allot_resource_num = control_allot_resource_num + 1
+            where id in
+        	<foreach item="item" collection="list"
+				open="(" separator="," close=")">
+					#{item}
+			</foreach>
+    </update>
+	
+	<update id="resetUserAllotClubNum">
+		update sys_user set allot_club_num = 0 where user_group = 88002666
+	</update>
+	
+	<select id="querybyManageId" resultType="java.lang.Long">
+		SELECT
+			id
+		FROM
+			sys_user
+		WHERE
+			user_group = 88002666
+		AND parent_id = #{parentId}
+		AND is_allot_resource = 1
+		AND enable_ = 1
+		AND locked_ = 0
+		AND allot_club_num = (
+			SELECT
+				min(allot_club_num)
+			FROM
+				sys_user
+			WHERE
+				user_group = 88002666
+			AND parent_id = #{parentId}
+			and is_allot_resource = 1
+			AND enable_ = 1
+			AND locked_ = 0
+			AND id not in(1145584915955978240,1145584811786244096)
+		)
+		
+		LIMIT 1
+	</select>
+	
+	<select id="queryByDId" resultType="java.lang.Long">
+		select id from sys_user where ding_id = #{did} limit 0,1
+	</select>
+	
+	
+	<select id="queryUpgradeUserByIds" resultType="java.lang.Long">
+	SELECT id FROM sys_user
+		WHERE
+			 is_allot_resource = 1
+		AND enable_ = 1
+		AND locked_ = 0
+		AND allot_club_num = (
+			SELECT min(allot_club_num) FROM sys_user
+			WHERE 
+				is_allot_resource = 1
+			AND enable_ = 1
+			AND locked_ = 0 
+			and id in 
+			<foreach item="item" index="index" collection="ids" 
+                       open="(" separator="," close=")">
+                       #{item}
+              	</foreach>
+		) and id in 
+			<foreach item="item" index="index" collection="ids" 
+                       open="(" separator="," close=")">
+                       #{item}
+              	</foreach>
+	</select>
+
+	<select id="queryByDIds" resultType="java.lang.Long">
+		select id from sys_user where ding_id = #{did} and enable_ = 1 
+			AND locked_ = 0
+	</select>
+	
+	<select id="queryDirectorMang" resultType="java.lang.Long">
+		SELECT id FROM sys_user
+			WHERE enable_ = 1 
+			AND locked_ = 0
+			AND parent_id = #{userId}
+	</select>
+</mapper>

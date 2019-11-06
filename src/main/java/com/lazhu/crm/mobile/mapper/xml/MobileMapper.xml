@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.mobile.mapper.MobileMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_mobile
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+			    and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+			    and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.rsaMobile != null and cm.rsaMobile != ''">
+			    and rsa_mobile = #{cm.rsaMobile}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getRsaMobileByMd5" resultType="java.lang.String">
+		select rsa_mobile from crm_mobile where md5_mobile = #{md5Mobile}
+	</select>
+	
+	<update id="bachUpdMobile">
+		<foreach collection="up" separator=";" item="item">
+			update
+			crm_mobile set enable_ = 0,rsa_mobile = #{item.secretMobile} where id =
+			#{item.id}
+		</foreach>
+	</update>
+	
+	<!-- 批量保存,并返回插入的ID -->
+	<insert id="insertBatchMobile" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+	    INSERT INTO crm_mobile (
+	    id,
+	    customer_id,
+	    fuzzy_mobile,
+	    md5_mobile,
+	    rsa_mobile,
+	    create_time,
+	    update_time)
+	    VALUES
+	    <foreach collection="list" item="item" separator=",">
+	        ( #{item.id},
+	          #{item.customerId},
+	          #{item.fuzzyMobile},
+	          #{item.md5Mobile},
+	          #{item.rsaMobile},
+	          #{item.createTime},
+	          #{item.updateTime})
+	    </foreach>
+	</insert>
+	
+</mapper>

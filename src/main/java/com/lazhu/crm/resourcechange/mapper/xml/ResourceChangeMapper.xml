@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.resourcechange.mapper.ResourceChangeMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_resource_change
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.oldWebchat != null and cm.oldWebchat != ''">
+			    and old_webchat like concat(concat('%',#{cm.oldWebchat}),'%')
+			</if>
+			<if test="cm.newWebchat != null and cm.newWebchat != ''">
+			    and new_webchat like concat(concat('%',#{cm.newWebchat}),'%')
+			</if>
+			<if test="cm.oldQq != null and cm.oldQq != ''">
+			    and old_qq like concat(concat('%',#{cm.oldQq}),'%')
+			</if>
+			<if test="cm.newQq != null and cm.newQq != ''">
+			    and new_qq like concat(concat('%',#{cm.newQq}),'%')
+			</if>
+			<if test="cm.oldMobile != null and cm.oldMobile != ''">
+			    and old_mobile like concat(concat('%',#{cm.oldMobile}),'%')
+			</if>
+			<if test="cm.newMobile != null and cm.newMobile != ''">
+			    and new_mobile like concat(concat('%',#{cm.newMobile}),'%')
+			</if>
+			<if test="cm.operatorIp != null and cm.operatorIp != ''">
+			    and operator_ip like concat(concat('%',#{cm.operatorIp}),'%')
+			</if>
+		</where>
+	</select>
+</mapper>

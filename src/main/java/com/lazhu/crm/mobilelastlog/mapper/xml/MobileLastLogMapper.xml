@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.mobilelastlog.mapper.MobileLastLogMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_mobile_last_log
+		<where>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+			    and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.agentNo != null and cm.agentNo != ''">
+			    and agent_no = #{cm.agentNo}
+			</if>
+			<if test="cm.type != null and cm.type != ''">
+				and type = #{cm.type}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryLastByMd5Mobile" resultType="java.lang.Long">
+		select id from crm_mobile_last_log where md5_mobile = #{md5Mobile} order by create_time desc limit 1
+	</select>
+	
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.aladdinpbx.agentevent.mapper.AgentEventMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from aladdinpbx_agent_event
+		<where>
+			<if test="cm.code != null and cm.code != ''">
+				and code = #{cm.code}
+			</if>
+			<if test="cm.agentExt != null and cm.agentExt != ''">
+				and agent_ext = #{cm.agentExt}
+			</if>
+			<if test="cm.agentFrom != null and cm.agentFrom != ''">
+				and agent_from = #{cm.agentFrom}
+			</if>
+			<if test="cm.agentTo != null and cm.agentTo != ''">
+				and agent_to = #{cm.agentTo}
+			</if>
+			<if test="cm.body != null and cm.body != ''">
+			    and body like concat(concat('%',#{cm.body}),'%')
+			</if>
+			<if test="cm.p1 != null and cm.p1 != ''">
+			    and p1 like concat(concat('%',#{cm.p1}),'%')
+			</if>
+			<if test="cm.p2 != null and cm.p2 != ''">
+			    and p2 like concat(concat('%',#{cm.p2}),'%')
+			</if>
+			<if test="cm.p3 != null and cm.p3 != ''">
+			    and p3 like concat(concat('%',#{cm.p3}),'%')
+			</if>
+			<if test="cm.p4 != null and cm.p4 != ''">
+			    and p4 like concat(concat('%',#{cm.p4}),'%')
+			</if>
+			<if test="cm.p5 != null and cm.p5 != ''">
+			    and p5 like concat(concat('%',#{cm.p5}),'%')
+			</if>
+			<if test="cm.p6 != null and cm.p6 != ''">
+			    and p6 like concat(concat('%',#{cm.p6}),'%')
+			</if>
+			<if test="cm.p7 != null and cm.p7 != ''">
+			    and p7 like concat(concat('%',#{cm.p7}),'%')
+			</if>
+			<if test="cm.dt != null and cm.dt != ''">
+				and dT = #{cm.dt}
+			</if>
+		</where>
+	</select>
+</mapper>

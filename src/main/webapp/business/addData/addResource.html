@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>客户联系方式表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:20px 10px 10px 10px;">
+    </el-row>
+    <hr/>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <el-row>
+		<el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+			<el-row style="margin-left:20px;">
+	    		<el-form-item label="资源ID" style="font-size: 13px;" prop="id">
+		    		<el-input size="small" style="width:150px;" v-model="searchParams.id" placeholder="资源ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="入库日期" style="font-size: 13px;" prop="createtime">
+		    		<el-date-picker type="date" size="small" @change="dayFormat" placeholder="选择日期" v-model="searchParams.createtime"></el-date-picker>
+		    	</el-form-item>
+		    	<el-form-item label="客户姓名" style="font-size: 13px;" prop="name">
+		    		<el-input style="width:100px;" size="small" v-model="searchParams.name" placeholder="客户姓名" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item label="手机号" style="font-size: 13px;" prop="mobile">
+		    		<el-input style="width:100px;" size="small" v-model="searchParams.mobile" placeholder="手机号" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item label="业务员" style="font-size: 13px;" prop="salerId">
+					<el-select
+					style="width:110px;"
+				    v-model="searchParams.salerId"
+				    filterable
+				    remote
+				    placeholder="业务员"
+				    :remote-method="selectSaler"
+					:loading="loading">
+						<el-option
+							v-for="item in salerMap"
+							:key="item.value"
+							:label="item.label"
+							:value="item.value">
+						</el-option>
+					</el-select>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+		</el-form>
+    </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            
+            <el-table-column
+                    prop="salerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="demand"
+                    min-width="460"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户需求"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{ demandFormat(scope.row.demand,scope.row.planCode) }}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属总监"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="录入时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+            		fixed="right"
+                    prop="customer.fromInfo"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+            		fixed="right"
+                    prop="retainTime"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="距离到期"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{ retainTimeFormat(scope.row.retainTime) }}</span>
+                	</template>
+                </el-table-column>
+            
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+    	<el-col :span="8">
+            <el-button size="small" type="success" @click="showAddDialog">新增</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+<!---------------------------弹出编辑窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="entity.id?'编辑':'新增'" :visible.sync="editFormVisible">
+        <el-form ref="editForm" :model="entity" :rules="rules">
+	        <el-input size="small" v-model="entity.id" v-show="false" ></el-input>
+	    	<el-col :span="12">
+		        <el-form-item label="客户姓名：" label-width="150px" prop="name">
+		    			<el-input style="width:120px;" size="small" v-model="entity.name" placeholder="客户姓名" ></el-input>
+		        </el-form-item>
+	        </el-col>
+	    	<el-col :span="12">
+		        <el-form-item label="手机号：" label-width="150px" prop="mobile">
+		    			<el-input style="width:120px;" type="number" size="small" v-model="entity.mobile" placeholder="手机号" ></el-input>
+		        </el-form-item>
+	        </el-col>
+	    	<el-col :span="12">
+		        <el-form-item label="来源渠道：" label-width="150px" prop="fromInfo">
+		    			<lz-dic-select style="width:120px;" dic-type="RESOURCE_CHANNEL" v-model="entity.fromInfo"></lz-dic-select>
+		        </el-form-item>
+	        </el-col>
+	        <el-col :span="12">
+		        <el-form-item label="业务员：" label-width="150px" prop="salerId">
+						<el-select
+							style="width:120px;"
+						    v-model="entity.salerId"
+						    filterable
+						    remote
+						    placeholder="业务员"
+						    :remote-method="selectSaler"
+							:loading="loading">
+								<el-option
+									v-for="item in salerMap"
+									:key="item.value"
+									:label="item.label"
+									:value="item.value">
+								</el-option>
+						</el-select>
+				</el-form-item>
+			</el-col>
+	    	<el-col :span="24">
+		        <el-form-item label="推广专题：" label-width="150px" prop="planCode">
+		    			<el-input size="small" v-model="entity.planCode" placeholder="推广专题" ></el-input>
+		        </el-form-item>
+	        </el-col>
+	    	<el-col :span="12">
+		        <el-form-item label="年龄：" label-width="150px" prop="insurederAge">
+		    			<el-input size="small" style="width:110px;" type="number" v-model="demand.insurederAge" ></el-input>
+		        </el-form-item>
+	        </el-col>
+	    	<el-col :span="12">
+		        <el-form-item label="性别：" label-width="150px" prop="policyholderSex">
+		    		<lz-dic-select style="width:120px;" dic-type="SEX" v-model="demand.policyholderSex"></lz-dic-select>
+		        </el-form-item>
+	        </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" type="info"  @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="addResource.js"></script>
+</html>

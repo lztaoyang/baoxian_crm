@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.t.resourcreport.mapper.ResourceReportProvinceMapper">
+
+<!-- 综合考虑没有使用union all 原因，分多条语句编写如果都加上查询条件的话，分多条其实在查询效率上应该高于union all，
+union拼接查询条件要么先查询结果集再筛选，语句上可能简便，但是如果数据量大，速度一定比分语句慢
+要么就是每个union 语句里面加上查询条件，效果等同于现在的分语句，但是这样的话语句会非常长，不便于修改维护 -->
+
+<!-- 为了加上执行人的筛选，每条语句多加一张t_resource_allot表的关联查询，建议同步资源的时候将执行人同步过去，减少数据库压力 -->
+
+	<!-- 查询资源总条数 -->
+	<select id="queryProvinceResourceNum" resultType="com.lazhu.t.resourcreport.entity.ResourceReportVO">
+		select tra.province dimension,count(tra.province) resourceNum from t_resource_allot tra
+		<where>
+			<if test="rr.province != null and rr.province != ''">
+				and tra.province like CONCAT('%',#{rr.province},'%')
+			</if>
+			<if test="rr.city != null and rr.city != ''">
+				and tra.city like CONCAT('%',#{rr.city},'%')
+			</if>
+			<if test="rr.channel != null and rr.channel != ''">
+				and tra.channel = #{rr.channel}
+			</if>
+			<if test="rr.startDate != null and rr.startDate != ''">
+				and TO_DAYS(tra.creater_time) >= TO_DAYS(#{rr.startDate})
+			</if>
+			<if test="rr.endDate != null and rr.endDate != ''">
+				<![CDATA[ and TO_DAYS(tra.creater_time) <= TO_DAYS(#{rr.endDate}) ]]>
+			</if>
+			<if test="rr.timeslot != null and rr.timeslot != ''">
+				and date_format(tra.creater_time,'%H') = #{rr.timeslot}
+			</if>
+			<if test="rr.executer != null and rr.executer != ''">
+				and tra.executer = #{rr.executer}
+			</if>
+		</where>
+		 GROUP BY tra.province
+	</select>
+	
+	<!-- 查询可聊条数 -->
+	<select id="queryProvinceTalkNum" resultType="com.lazhu.t.resourcreport.entity.ResourceReportVO">
+		select tra.province dimension,count(tra.is_talk) talkNum from t_resource_allot tra
+		<where>
+			tra.is_talk = 1
+			<if test="rr.province != null and rr.province != ''">
+				and tra.province = #{rr.province}
+			</if>
+			<if test="rr.city != null and rr.city != ''">
+				and tra.city = #{rr.city}
+			</if>
+			<if test="rr.channel != null and rr.channel != ''">
+				and tra.channel = #{rr.channel}
+			</if>
+			<if test="rr.startDate != null and rr.startDate != ''">
+				and TO_DAYS(tra.creater_time) >= TO_DAYS(#{rr.startDate})
+			</if>
+			<if test="rr.endDate != null and rr.endDate != ''">
+				<![CDATA[ and TO_DAYS(tra.creater_time) <= TO_DAYS(#{rr.endDate}) ]]>
+			</if>
+			<if test="rr.timeslot != null and rr.timeslot != ''">
+				and date_format(tra.creater_time,'%H') = #{rr.timeslot}
+			</if>
+			<if test="rr.executer != null and rr.executer != ''">
+				and tra.executer = #{rr.executer}
+			</if>
+		</where>
+		GROUP BY tra.province
+	</select>
+	 
+	<!-- 查询订单数 -->
+	<select id="queryProvinceOrderNum" resultType="com.lazhu.t.resourcreport.entity.ResourceReportVO">
+		select ccc.province dimension,sum(ccc.apply_num + ccc.upgrade_num) orderNum from crm_customer_count ccc
+		<where>
+			<if test="rr.province != null and rr.province != ''">
+				and ccc.province = #{rr.province}
+			</if>
+			<if test="rr.city != null and rr.city != ''">
+				and ccc.city = #{rr.city}
+			</if>
+			<if test="rr.channel != null and rr.channel != ''">
+				and ccc.channel = #{rr.channel}
+			</if>
+			<if test="rr.sex != null and rr.sex != '' and rr.sex != 0">
+				and ccc.sex = #{rr.sex}
+			</if>
+			<if test="rr.age != null and rr.age != ''">
+				and ccc.age = #{rr.age}
+			</if>
+			<if test="rr.startDate != null and rr.startDate != ''">
+				and TO_DAYS(ccc.enter_time) >= TO_DAYS(#{rr.startDate})
+			</if>
+			<if test="rr.endDate != null and rr.endDate != ''">
+				<![CDATA[ and TO_DAYS(ccc.enter_time) <= TO_DAYS(#{rr.endDate}) ]]>
+			</if>
+			<if test="rr.timeslot != null and rr.timeslot != ''">
+				and date_format(ccc.enter_time,'%H') = #{rr.timeslot}
+			</if>
+			<if test="rr.executer != null and rr.executer != ''">
+				and ccc.executer = #{rr.executer}
+			</if>
+		</where>
+		GROUP BY ccc.province 
+	</select>
+	
+	<!-- 查询客户数 -->
+	<select id="queryProvinceCustomerNum" resultType="com.lazhu.t.resourcreport.entity.ResourceReportVO">
+		select ccc.province dimension,count(ccc.province) customerNum from crm_customer_count ccc
+		<where>
+			<if test="rr.province != null and rr.province != ''">
+				and ccc.province = #{rr.province}
+			</if>
+			<if test="rr.city != null and rr.city != ''">
+				and ccc.city = #{rr.city}
+			</if>
+			<if test="rr.channel != null and rr.channel != ''">
+				and ccc.channel = #{rr.channel}
+			</if>
+			<if test="rr.sex != null and rr.sex != '' and rr.sex != 0">
+				and ccc.sex = #{rr.sex}
+			</if>
+			<if test="rr.age != null and rr.age != ''">
+				and ccc.age = #{rr.age}
+			</if>
+			<if test="rr.startDate != null and rr.startDate != ''">
+				and TO_DAYS(ccc.enter_time) >= TO_DAYS(#{rr.startDate})
+			</if>
+			<if test="rr.endDate != null and rr.endDate != ''">
+				<![CDATA[ and TO_DAYS(ccc.enter_time) <= TO_DAYS(#{rr.endDate}) ]]>
+			</if>
+			<if test="rr.timeslot != null and rr.timeslot != ''">
+				and date_format(ccc.enter_time,'%H') = #{rr.timeslot}
+			</if>
+			<if test="rr.executer != null and rr.executer != ''">
+				and ccc.executer = #{rr.executer}
+			</if>
+		</where>
+		GROUP BY ccc.province 
+	</select>
+	
+	<!-- 查询总保费 -->
+	<select id="queryProvinceInsureMoney" resultType="com.lazhu.t.resourcreport.entity.ResourceReportVO">
+		select ccc.province dimension,sum(ccc.insure_money) insureMoney from crm_customer_count ccc
+		<where>
+			<if test="rr.province != null and rr.province != ''">
+				and ccc.province = #{rr.province}
+			</if>
+			<if test="rr.city != null and rr.city != ''">
+				and ccc.city = #{rr.city}
+			</if>
+			<if test="rr.channel != null and rr.channel != ''">
+				and ccc.channel = #{rr.channel}
+			</if>
+			<if test="rr.sex != null and rr.sex != '' and rr.sex != 0">
+				and ccc.sex = #{rr.sex}
+			</if>
+			<if test="rr.age != null and rr.age != ''">
+				and ccc.age = #{rr.age}
+			</if>
+			<if test="rr.startDate != null and rr.startDate != ''">
+				and TO_DAYS(ccc.enter_time) >= TO_DAYS(#{rr.startDate})
+			</if>
+			<if test="rr.endDate != null and rr.endDate != ''">
+				<![CDATA[ and TO_DAYS(ccc.enter_time) <= TO_DAYS(#{rr.endDate}) ]]>
+			</if>
+			<if test="rr.timeslot != null and rr.timeslot != ''">
+				and date_format(ccc.enter_time,'%H') = #{rr.timeslot}
+			</if>
+			<if test="rr.executer != null and rr.executer != ''">
+				and ccc.executer = #{rr.executer}
+			</if>
+		</where>
+		GROUP BY ccc.province
+	</select>
+	
+</mapper>

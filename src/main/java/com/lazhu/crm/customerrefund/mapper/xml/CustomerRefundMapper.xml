@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.customerrefund.mapper.CustomerRefundMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_customer_refund
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and CUSTOMER_ID = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+				and CUSTOMER_NAME like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.refundMoney != null and cm.refundMoney != ''">
+				and REFUND_MONEY = #{cm.refundMoney}
+			</if>
+			<if test="cm.dealerId != null and cm.dealerId != ''">
+				and DEALER_ID = #{cm.dealerId}
+			</if>
+			<if test="cm.dealerName != null and cm.dealerName != ''">
+				and DEALER_NAME like concat(concat('%',#{cm.dealerName}),'%')
+			</if>
+			<if test="cm.dealerStatus != null">
+				and DEALER_STATUS = #{cm.dealerStatus}
+			</if>
+			<if test="cm.dealerResult != null and cm.dealerResult != ''">
+				and DEALER_RESULT like concat(concat('%',#{cm.dealerResult}),'%')
+			</if>
+			<if test="cm.createBy != null and cm.createBy != ''">
+				and create_by = #{cm.createBy}
+			</if>
+			<if test="cm.signApplyId != null and cm.signApplyId != ''">
+				and SIGNAPPLY_ID = #{cm.signApplyId}
+			</if>
+			<if test="cm.isSuccess != null and cm.isSuccess != ''">
+				and is_Success = #{cm.isSuccess}
+			</if>
+			<if test="cm.serverId != null and cm.serverId != ''">
+				and DEALER_ID = #{cm.serverId}
+			</if>
+			<if test="cm.serverManagerId != null and cm.serverManagerId != ''">
+				and DEALER_ID in (select id from sys_user where parent_id
+				= #{cm.serverManagerId})
+			</if>
+			<if test="cm.refundType != null and cm.refundType != ''">
+				and refund_Type = #{cm.refundType}
+			</if>
+			<if test="cm.remind != null and cm.remind != ''">
+				and datediff(now(), create_time) > 9<!-- 10天之内的数据 -->
+			</if>
+			and enable_ = 1
+		</where>
+	</select>
+
+	<select id="list4zx" resultType="java.util.Map">
+		select
+		a.update_time,
+		a.customer_name,
+		b.insurance_name,
+		b.amount,
+		b.audit_time,
+		a.remark_,
+		a.DEALER_RESULT,
+		b.policy_no,
+		b.company_id,
+		a.satisfaction,
+		a.is_success,
+		a.REFUND_TYPE,
+		a.DEALER_NAME,
+		CONCAT(
+		b.minister_name,
+		'-',
+		b.director_name,
+		'-',
+		b.manager_name,
+		'-',
+		b.saler_name
+		) belong,
+		CAST(b.customer_id AS CHAR) customerId
+		from crm_customer_refund a, crm_sign_apply b
+		<where>
+			a.SIGNAPPLY_ID = b.id and b.enable_ = 1 and a.enable_ = 1 and
+			sign_status = 5
+			<if test="cm.customerName != null and cm.customerName != ''">
+				and b.customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.insuranceId != null and cm.insuranceId != ''">
+				and b.insurance_id = #{cm.insuranceId}
+			</if>
+			<if test="cm.insuranceName != null and cm.insuranceName != ''">
+				and b.insurance_name like concat(concat('%',#{cm.insuranceName}),'%')
+			</if>
+			<if test="cm.policyNo != null and cm.policyNo != ''">
+				and b.policy_no = #{cm.policyNo}
+			</if>
+			<if test="cm.amount != null and cm.amount != ''">
+				and b.amount = #{cm.amount}
+			</if>
+			<if test="cm.amountTerm != null and cm.amountTerm != ''">
+				and b.amount_term = #{cm.amountTerm}
+			</if>
+			<if test="cm.salerId != null">
+				and b.saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and b.manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and b.director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and b.minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.upgraderId != null and cm.upgraderId != ''">
+				and b.upgrader_id = #{cm.upgraderId}
+			</if>
+			<if test="cm.upgraderId != null and cm.upgraderId != ''">
+				and b.upgrader_id = #{cm.upgraderId}
+			</if>
+			<if test="cm.refundType != null and cm.refundType != ''">
+				and a.refund_Type = #{cm.refundType}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+
+		select id from crm_customer_refund
+		where customer_id = #{customerId} and enable_ = 1
+		order by create_time desc
+	</select>
+
+	<!-- 退保订单查询 -->
+	<select id="queryRefundSignApply" resultType="java.util.Map">
+		SELECT
+		c.`name` customerName, <!-- 客户名称 -->
+		r.REFUND_TYPE refundType,<!-- 退保类型 -->
+		sa.audit_time auditTime,<!-- 签单时间 -->
+		sa.insurance_name insuranceName,<!-- 退保产品 -->
+		sa.amount,<!-- 签单金额 -->
+		sa.amount_term,<!-- 缴费方式 -->
+		sa.policy_no policyNo,<!-- 保单号 -->
+		r.remark_ remark,<!-- 退保原因 -->
+		r.dealer_result dealerResult,
+		r.create_time createTime,<!-- 申请时间 -->
+		r.update_time updateTime,<!-- 处理时间 -->
+		r.DEALER_NAME dealerName,<!-- 处理人员 -->
+		CONCAT(c.director_name,'-',c.manager_name,'-',c.saler_name) belong,<!-- 
+			市场归属 -->
+		c.CONTRACTER_name contracterName,<!-- 商务人员 -->
+		c.server_name serverName,<!-- 客服人员 -->
+		c.from_info fromInfo,<!-- 来源 -->
+		sa.is_long_term<!-- 是否长险 -->
+		FROM
+		crm_customer_refund r
+		INNER JOIN crm_customer c ON r.CUSTOMER_ID = c.id <!-- 关联用户表 -->
+		INNER JOIN crm_sign_apply sa ON r.SIGNAPPLY_ID = sa.id<!-- 关联订单表 -->
+		<where>
+			r.DEALER_STATUS = 1 AND r.is_success = 1<!-- 查询退保已处理和退保成功的 -->
+			<if test="cm.customerName != null and cm.customerName != ''">
+				and c.`name` like concat(concat('%',#{cm.customerName}),'%') <!-- 客户名称条件 -->
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and c.md5_mobile = #{cm.md5Mobile} <!-- 手机号码条件 -->
+			</if>
+			<if test="cm.policyNo != null and cm.policyNo != ''">
+				and sa.policy_no = #{cm.policyNo} <!-- 保单号条件 -->
+			</if>
+			<if test="cm.refundType != null and cm.refundType != ''">
+				and r.refund_type = #{cm.refundType} <!-- 退保类型条件 -->
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})<!-- 签单开始日期 -->
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})<!-- 签单结束日期 -->
+			</if>
+		</where>
+	</select>
+</mapper>

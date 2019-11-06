@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.developdaycall.mapper.DevelopDayCallMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_develop_day_call
+		<where>
+			<if test="cm.dayDate != null and cm.dayDate != ''">
+				and day_date = #{cm.dayDate}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.callNum != null and cm.callNum != ''">
+				and call_num = #{cm.callNum}
+			</if>
+			<if test="cm.throughNum != null and cm.throughNum != ''">
+				and through_num = #{cm.throughNum}
+			</if>
+			<if test="cm.callValidNum != null and cm.callValidNum != ''">
+				and call_valid_num = #{cm.callValidNum}
+			</if>
+			<if test="cm.tochatNum != null and cm.tochatNum != ''">
+				and tochat_num = #{cm.tochatNum}
+			</if>
+			<if test="cm.disposedNum != null and cm.disposedNum != ''">
+				and disposed_num = #{cm.disposedNum}
+			</if>
+			<if test="cm.totalLength != null and cm.totalLength != ''">
+				and total_length = #{cm.totalLength}
+			</if>
+			<if test="cm.validLength != null and cm.validLength != ''">
+				and valid_length = #{cm.validLength}
+			</if>
+			<if test="cm.promoteResourceNum != null and cm.promoteResourceNum != ''">
+				and promote_resource_num = #{cm.promoteResourceNum}
+			</if>
+			<if test="cm.extractNum != null and cm.extractNum != ''">
+				and extract_num = #{cm.extractNum}
+			</if>
+			<if test="cm.loseResourceNum != null and cm.loseResourceNum != ''">
+				and lose_resource_num = #{cm.loseResourceNum}
+			</if>
+			<if test="cm.signNum != null and cm.signNum != ''">
+				and sign_num = #{cm.signNum}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByBusiness" resultType="java.util.Map">
+		select ye.saler_id salerId,
+			ye.yesterdayNum,
+			vor.vorgesternNum,
+			weekRecord.weekNum,
+			weekRecord.weekValidLength
+			from 
+			(select saler_id,
+				sum(disposed_num) yesterdayNum
+				from crm_develop_day_call
+				<where>
+					TO_DAYS(day_date) = TO_DAYS(NOW()) - 1
+					<if test="cm.managerId != null and cm.managerId != ''">
+						and manager_id = #{cm.managerId}
+					</if>
+					<if test="cm.directorId != null and cm.directorId != ''">
+						and director_id = #{cm.directorId}
+					</if>
+					<if test="cm.ministerId != null and cm.ministerId != ''">
+						and minister_id = #{cm.ministerId}
+					</if>
+				</where>
+				group by saler_id
+			) as ye
+		LEFT JOIN 
+			(select saler_id,
+				sum(disposed_num) vorgesternNum
+				from crm_develop_day_call
+				<where>
+					TO_DAYS(day_date) = TO_DAYS(NOW()) - 2
+					<if test="cm.managerId != null and cm.managerId != ''">
+						and manager_id = #{cm.managerId}
+					</if>
+					<if test="cm.directorId != null and cm.directorId != ''">
+						and director_id = #{cm.directorId}
+					</if>
+					<if test="cm.ministerId != null and cm.ministerId != ''">
+						and minister_id = #{cm.ministerId}
+					</if>
+				</where>
+				group by saler_id
+			) as vor on ye.saler_id = vor.saler_id
+		LEFT JOIN 
+			(select saler_id,
+				sum(call_num) weekNum,
+				sum(if(valid_length>59,valid_length,0)) weekValidLength
+				from crm_develop_day_call 
+				<where>
+					YEARWEEK(date_format(day_date,'%Y-%m-%d')) = YEARWEEK(now())
+					<if test="cm.managerId != null and cm.managerId != ''">
+						and manager_id = #{cm.managerId}
+					</if>
+					<if test="cm.directorId != null and cm.directorId != ''">
+						and director_id = #{cm.directorId}
+					</if>
+					<if test="cm.ministerId != null and cm.ministerId != ''">
+						and minister_id = #{cm.ministerId}
+					</if>
+				</where>
+				GROUP BY saler_id
+			) as weekRecord on ye.saler_id = weekRecord.saler_id
+	</select>
+</mapper>

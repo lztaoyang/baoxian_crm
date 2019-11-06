@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.customer.mapper.CustomerMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_customer
+		<where>
+			<if test="cm.name != null and cm.name != ''">
+			    and name like concat(concat('%',#{cm.name}),'%')
+			</if>
+			<if test="cm.names != null">
+				 and name in 
+					<foreach item="item" index="index" collection="cm.names" 
+                         open="(" separator="," close=")">
+                         #{item}
+                	</foreach>
+			</if>
+			<if test="cm.insuranceId != null and cm.insuranceId != ''">
+				 and id in (
+					SELECT customer_id FROM crm_sign_apply WHERE insurance_id = #{cm.insuranceId}
+					AND sign_status = 5 AND enable_ = 1 AND is_refund = 0
+					)
+					
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info =#{cm.fromInfo}
+			</if>
+			<if test="cm.enterTime != null and cm.enterTime != ''">
+				and TO_DAYS(enter_time) = TO_DAYS(#{cm.enterTime})
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+				and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.duty != null and cm.duty != ''">
+			    and duty like concat(concat('%',#{cm.duty}),'%')
+			</if>
+			<if test="cm.birthday != null and cm.birthday != ''">
+				and TO_DAYS(birthday) = TO_DAYS(#{cm.birthday})
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<!-- <if test="cm.insureNum != null and cm.insureNum != ''">
+				and insure_num = #{cm.insureNum}
+			</if> -->
+			<if test="cm.insureNum == 1 ">
+				and insure_num = 1
+			</if>
+			<if test="cm.insureNum == -1 ">
+				and insure_num &gt; 1
+			</if>
+			<if test="cm.insureMoney != null and cm.insureMoney != ''">
+				and insure_money = #{cm.insureMoney}
+			</if>
+			<if test="cm.currentApplyId != null and cm.currentApplyId != ''">
+				and current_apply_id = #{cm.currentApplyId}
+			</if>
+			<if test="cm.isService != null and cm.isService != ''">
+				and is_service = #{cm.isService}
+			</if>
+			<if test="cm.salerId != null">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+			    and saler_name like concat(concat('%',#{cm.salerName}),'%')
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+			    and manager_name like concat(concat('%',#{cm.managerName}),'%')
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+			    and director_name like concat(concat('%',#{cm.directorName}),'%')
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+			    and minister_name like concat(concat('%',#{cm.ministerName}),'%')
+			</if>
+			<if test="cm.contracterId != null">
+				and CONTRACTER_ID = #{cm.contracterId}
+			</if>
+			<if test="cm.contracterName != null and cm.contracterName != ''">
+			    and CONTRACTER_name like concat(concat('%',#{cm.contracterName}),'%')
+			</if>
+			<if test="cm.remark != null and cm.remark != ''">
+			    and remark like concat(concat('%',#{cm.remark}),'%')
+			</if>
+			<if test="cm.contracterRemark != null and cm.contracterRemark != ''">
+			    and contracter_remark like concat(concat('%',#{cm.contracterRemark}),'%')
+			</if>
+			<if test="cm.serverRemark != null and cm.serverRemark != ''">
+			    and server_remark like concat(concat('%',#{cm.serverRemark}),'%')
+			</if>
+			<if test="cm.serverManagerId != null and cm.serverManagerId != ''">
+				and server_manager_id = #{cm.serverManagerId}
+			</if>
+			<if test="cm.serverManagerName != null and cm.serverManagerName != ''">
+			    and server_manager_name like concat(concat('%',#{cm.serverManagerName}),'%')
+			</if>
+			<if test="cm.serverId != null and cm.serverId != ''">
+				and server_id = #{cm.serverId}
+			</if>
+			<if test="cm.serverName != null and cm.serverName != ''">
+			    and server_name like concat(concat('%',#{cm.serverName}),'%')
+			</if>
+			<if test="cm.oldApplyId != null and cm.oldApplyId != ''">
+				and old_apply_id = #{cm.oldApplyId}
+			</if>
+			<if test="cm.oldFlowId != null and cm.oldFlowId != ''">
+				and old_flow_id = #{cm.oldFlowId}
+			</if>
+			<if test="cm.oldIsHg != null and cm.oldIsHg != ''">
+				and old_is_hg = #{cm.oldIsHg}
+			</if>
+			<if test="cm.oldIsService != null and cm.oldIsService != ''">
+				and old_is_service = #{cm.oldIsService}
+			</if>
+			<if test="cm.oldServerId != null and cm.oldServerId != ''">
+				and old_server_id = #{cm.oldServerId}
+			</if>
+			<if test="cm.oldServerName != null and cm.oldServerName != ''">
+			    and old_server_name like concat(concat('%',#{cm.oldServerName}),'%')
+			</if>
+			<if test="cm.updateBy != null and cm.updateBy != ''">
+				and update_by = #{cm.updateBy}
+			</if>
+			<if test="cm.applyTime != null and cm.applyTime != ''">
+				and TO_DAYS(apply_time) = TO_DAYS(#{cm.applyTime})
+			</if>
+			<if test="cm.upgradeExtraceTime != null and cm.upgradeExtraceTime != ''">
+				and TO_DAYS(upgrade_extrace_time) = TO_DAYS(#{cm.upgradeExtraceTime})
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(apply_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(apply_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.upgraderId != null">
+				and upgrader_id = #{cm.upgraderId}
+			</if>
+			<if test="cm.upgradeManagerId != null ">
+				and upgrade_manager_id = #{cm.upgradeManagerId}
+			</if>
+			<if test="cm.upgradeDirectorId != null ">
+				and upgrade_director_id = #{cm.upgradeDirectorId}
+			</if>
+			<if test="cm.upgradeMinisterId != null">
+				and upgrade_minister_id = #{cm.upgradeMinisterId}
+			</if>
+			<if test="cm.upgradeFlow != null">
+				and upgrade_flow = #{cm.upgradeFlow}
+			</if>
+			<if test="cm.backDevelopFlow != null and cm.backDevelopFlow != ''">
+				and back_develop_flow = #{cm.backDevelopFlow}
+			</if>
+			<if test="cm.backDeveloperId != null and cm.backDeveloperId != ''">
+				and back_developer_id = #{cm.backDeveloperId}
+			</if>
+			<if test="cm.isUpgrade != null">
+				and is_upgrade = #{cm.isUpgrade}
+			</if>
+			<if test="cm.isWaitUpgrade != null">
+				and is_wait_upgrade = #{cm.isWaitUpgrade}
+			</if>
+			<if test="cm.isTodayCall != null and cm.isTodayCall == '1'">
+				and TO_DAYS(last_call_time) = TO_DAYS(NOW())
+			</if>
+			<if test="cm.isTodayCall != null and cm.isTodayCall == '2'">
+				and (last_call_time is null or TO_DAYS(last_call_time) != TO_DAYS(NOW()))
+			</if>
+			<if test="cm.type != null">
+				and type = #{cm.type}
+			</if>
+			<if test="cm.server != null and cm.server == 2">
+				and NOW() &gt;= end_date
+			</if>
+			<if test="cm.server != null and cm.server == 1">
+				and NOW() &lt;= end_date
+			</if>
+			<if test="cm.server != null and cm.server == 3">
+				and DATE_ADD(NOW(), INTERVAL 7 DAY) &gt;= date(end_date)
+			</if>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and TO_DAYS(start_date) &gt;= TO_DAYS(#{cm.startDate})
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and TO_DAYS(end_date) &lt;= TO_DAYS(#{cm.endDate})
+			</if>
+			<if test="cm.isInterest != null and cm.isInterest != ''">
+				and is_interest = #{cm.isInterest}
+			</if>
+			<if test="cm.stockNum != null and cm.stockNum != ''">
+				and stock_num = #{cm.stockNum}
+			</if>
+			<if test="cm.teacherStockNum != null and cm.teacherStockNum != ''">
+				and teacher_stock_num = #{cm.teacherStockNum}
+			</if>
+			<if test="cm.stockCode != null and cm.stockCode != ''">
+				and (id IN (SELECT customer_id FROM crm_customer_actual_cot
+					WHERE stock_code = #{cm.stockCode} and enable_ = 1 ) 
+					OR id IN ( SELECT customer_id FROM crm_teacher_directive_cot
+					WHERE  stock_code = #{cm.stockCode} and enable_ = 1 ) )
+			</if>
+			<if test="cm.stockName != null and cm.stockName != ''">
+				and (id IN (SELECT customer_id FROM crm_customer_actual_cot
+					WHERE stock_name like concat(concat('%',#{cm.stockName}),'%') and enable_ = 1 ) 
+					OR id IN ( SELECT customer_id FROM crm_teacher_directive_cot
+					WHERE stock_name like concat(concat('%',#{cm.stockName}),'%') and enable_ = 1 ) )
+			</if>
+			
+			<if test="cm.isImportant != null">
+				and is_important = #{cm.isImportant}
+			</if>
+		</where>
+	</select>
+	
+		
+	<select id="isExist" resultType="java.lang.Long">
+		select count(id) from crm_customer where md5_mobile = #{cm.md5Mobile}
+	</select>
+	
+	<select id="isExists" resultType="java.lang.Long">
+		select count(id) from crm_customer
+		<where>
+			md5_mobile = #{cm.md5Mobile}
+			<if test="cm.updateBy != null">
+				and (
+						create_by	!= #{cm.updateBy}
+					and	saler_id	!= #{cm.updateBy}
+					and	manager_id	!= #{cm.updateBy}
+					and	director_id	!= #{cm.updateBy}
+					
+					and	contracter_id	!= #{cm.updateBy}
+					and	server_id	!= #{cm.updateBy}
+					and	server_manager_id	!= #{cm.updateBy}
+					
+					and	upgrader_id	!= #{cm.updateBy}
+					and	upgrade_manager_id	!= #{cm.updateBy}
+				)
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateBelongBySalerId">
+		update crm_customer set 
+			
+			saler_name = #{cm.salerName},
+			manager_id = #{cm.managerId},
+			manager_name = #{cm.managerName},
+			director_id = #{cm.directorId},
+			director_name = #{cm.directorName}
+			
+			where saler_id = #{cm.salerId}
+	</update>
+	
+	<select id="queryCustomerProvincePage" resultType="java.lang.Long">
+			select id from crm_customer  group by province having  province  &lt;&gt; ''
+	</select>
+	<select id="queryCustomerCityPage" resultType="java.lang.Long">
+			select id from crm_customer  group by city having city &lt;&gt; ''
+	</select>
+	
+	<select id="queryByMd5Mobile" resultType="java.lang.Long">
+			select id from crm_customer where md5_mobile = #{md5Mobile}
+	</select>
+	
+	<!-- 统计生日到期客户 -->
+	<select id="queryBirthday" resultType="java.util.Map">
+		SELECT
+			c.`name` customerName,
+			<if test="cm.queryType != null and cm.queryType != ''">
+			c.birthday,
+			IF(DATEDIFF(CONCAT(DATE_FORMAT(NOW(),'%Y'),DATE_FORMAT(c.birthday,'-%m-%d')),NOW()) > 0 , 
+				DATEDIFF(CONCAT(DATE_FORMAT(NOW(),'%Y'),DATE_FORMAT(c.birthday,'-%m-%d')),NOW()), 
+				DATEDIFF(CONCAT(DATE_FORMAT(NOW(),'%Y') + 1,DATE_FORMAT(c.birthday,'-%m-%d')),NOW())) days,
+			</if>
+			sa.insurance_name insuranceName,
+			sa.amount,
+			c.insure_money insureMoney,
+			sa.audit_time auditTime,
+			c.insure_num insureNum,
+			c.fuzzy_mobile fuzzyMobile,
+			CONCAT(c.director_name,'-',c.manager_name,'-',c.saler_name) belong,
+			c.server_name serverName
+		FROM
+			crm_customer c
+		INNER JOIN crm_sign_apply sa ON c.current_apply_id = sa.id
+		<where>
+			<choose>
+				<when test="cm.queryType != null and cm.queryType != ''">c.birthday is not null</when>
+				<otherwise>c.birthday is null</otherwise>
+			</choose>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and c.`name` like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+			    and c.md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and c.saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and c.manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and c.director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and c.minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.teacherStockNum != null and cm.teacherStockNum != ''">
+				and teacher_stock_num = #{cm.teacherStockNum}
+			</if>
+			<if test="cm.stockNum != null and cm.stockNum != ''">
+				and stock_num = #{cm.stockNum}
+			</if>
+		</where>
+	</select>
+	
+	<select id="upgradeExtractCustomerId" resultType="java.lang.Long">
+		SELECT ID FROM crm_customer WHERE is_wait_upgrade = 1 and is_upgrade = 0 ORDER BY first_applyed_time ASC LIMIT 20
+	</select>
+	
+	<select id="queryNotUpdateCustomer" resultType="java.lang.Long">
+		select id from crm_customer
+		where is_upgrade = 0 
+	</select>
+	
+	
+	<select id="queryGroupProvince" resultType="java.util.Map">
+		select count(*) as num ,province as dimensions
+		from crm_customer
+		<where>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.startDate})
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.endDate})
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info =#{cm.fromInfo}
+			</if>
+			<if test="cm.age != null and cm.age != ''">
+			    and age =#{cm.age}
+			</if>
+		</where>
+			group by province
+			ORDER BY num DESC
+	</select>
+	
+	<select id="queryGroupFromInfo" resultType="java.util.Map">
+		select count(*) as num ,sd.code_text as dimensions
+		from crm_customer cc
+		LEFT JOIN sys_dic sd on sd.type_='RESOURCE_CHANNEL' and cc.from_info = sd.code_
+		<where>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and TO_DAYS(cc.create_time) &gt;= TO_DAYS(#{cm.startDate})
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and TO_DAYS(cc.create_time) &lt;= TO_DAYS(#{cm.endDate})
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info =#{cm.fromInfo}
+			</if>
+			<if test="cm.age != null and cm.age != ''">
+			    and age =#{cm.age}
+			</if>
+		</where>
+			group by cc.from_info
+			ORDER BY num DESC
+	</select>
+	
+	<select id="queryGroupCity" resultType="java.util.Map">
+		select count(*) as num ,city as dimensions from crm_customer
+		<where>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.startDate})
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.endDate})
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info =#{cm.fromInfo}
+			</if>
+			<if test="cm.age != null and cm.age != ''">
+			    and age =#{cm.age}
+			</if>
+		</where>
+			group by city
+			ORDER BY num DESC
+	</select>
+	
+	
+	<select id="queryGroupAge" resultType="java.util.Map">
+		select count(*) as num ,age as dimensions from crm_customer
+		<where>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.startDate})
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.endDate})
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info =#{cm.fromInfo}
+			</if>
+			<if test="cm.age != null and cm.age != ''">
+			    and age =#{cm.age}
+			</if>
+		</where>
+			group by age
+			ORDER BY num DESC
+	</select>
+	
+	<select id="queryAll" resultType="java.lang.Long">
+		select id from crm_customer where is_interest = 1
+	</select>
+
+	<select id="queryTenDaysCusomer" resultType="java.lang.Long">
+		SELECT id FROM crm_customer WHERE is_upgrade = 1
+			AND is_interest = 1 
+			and flow_id = 501 and apply_time >'2019-07-29 00:00:00'
+	</select>
+</mapper>

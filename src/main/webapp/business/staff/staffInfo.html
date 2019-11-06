@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dept.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app" style="float:left;width:100% ">
+	<div style="float:left;width:15%;height:50%;border:1px;margin-top:10px">
+		<el-row >
+			<el-tree
+            :data="dept"
+            :props="defaultProps"
+            :default-expanded-keys="[10,11,'910764883954335744']"
+            node-key="id"
+            accordion
+            @node-click="handleNodeClick"
+            >
+   		 	</el-tree>
+		</el-row> 
+	</div>
+    <!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <div style="float:right ; width:85% ">
+   
+    <!---------------------------页头导航 结束----------------------------------------------------------------------->
+    <!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px">
+                <el-form-item label="姓名" style="font-size: 13px;" prop="userName">
+                    <el-input size="small" v-model="searchParams.userName" placeholder="姓名"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-form>
+     </el-row>
+    <!---------------------------查询面板 结束----------------------------------------------------------------------->
+    <!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  stripe
+                  max-height="450px"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+
+            <el-table-column
+                    prop="account"
+                    min-width="60"
+                    v-bind:show-overflow-tooltip="true"
+                    label="姓名"
+                    align="center"
+            		>
+            </el-table-column>
+             <el-table-column
+                    prop="agentNo"
+                    min-width="60"
+                    v-bind:show-overflow-tooltip="true"
+                    label="分机号"
+                    align="center"
+            		>
+            		<template scope="scope">
+            			<el-input type="number" size="small" v-model="scope.row.agentNo" placeholder="分机号"></el-input>
+                	</template>
+            </el-table-column>
+            <el-table-column
+                    prop="deptName"
+                    min-width="60"
+                    v-bind:show-overflow-tooltip="true"
+                    label="部门"
+                    align="center"
+            		>
+                	<template scope="scope">
+                    	<lz-dept-name :dept-id="scope.row.deptId"></lz-dept-name>
+                	</template>
+            </el-table-column>
+            
+            <el-table-column
+                    prop="entryTime"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="入职日期"
+                    align="center"
+            		>
+            		<template scope="scope">
+                    	<el-date-picker type="date" size="small" placeholder="选择日期"
+                                    v-model="scope.row.entryTime"></el-date-picker>
+                	</template>
+            </el-table-column>
+            
+            <el-table-column
+                    prop="dingId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="钉钉ID"
+                    align="center"
+            		>
+            		<template scope="scope">
+                    	<el-input size="small" v-model="scope.row.dingId" placeholder="请输入钉钉ID"></el-input>
+                	</template>
+            </el-table-column>
+            <el-table-column
+                    prop="locked"
+                    min-width="60"
+                    v-bind:show-overflow-tooltip="true"
+                    label="人员状态"
+                    align="center"
+            		>
+            		<template scope="scope">
+            			<lz-dic-select dic-type="USERSTAUTS" v-model="scope.row.locked"></lz-dic-select>
+                	</template>
+            </el-table-column>
+            <el-table-column
+                    label="操作"
+                    width="70"
+                    align="center"
+                    >
+                <template scope="scope">
+                	<el-button size="mini" type="success" @click="saveRow(scope.row)">保存</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+            <!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readUser"
+                           @current-change="readUser"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+    <!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    <!-- 编辑其他属性 -->
+     <el-dialog title="编译其他属性" :visible.sync="editFormVisible">
+        <el-form ref="editForm" :model="entity" :rules="rules" >
+            <el-input size="small" v-model="entity.id" v-show="false"></el-input>
+            <el-col :span="12">
+                <el-form-item label="性别" label-width="100px" prop="sex">
+                    <lz-dic-select v-model="entity.sex" dic-type="SEX"></lz-dic-select>
+                </el-form-item>
+            </el-col>
+            <el-col :span="12">
+                <el-form-item label="出生日期" label-width="100px" prop="birthDay">
+                    <el-date-picker type="date" size="small" placeholder="选择日期"
+                                    v-model="entity.birthDay"></el-date-picker>
+                </el-form-item>
+            </el-col> 
+            <el-col :span="12">
+                <el-form-item label="学历" label-width="100px" prop="education">
+                    <lz-dic-select v-model="entity.education" dic-type="EDUCATION"></lz-dic-select>
+                </el-form-item>
+            </el-col>
+            <el-col :span="12">
+                <el-form-item label="锁定" label-width="100px" prop="locked">
+                    <lz-dic-select dic-type="LOCKED" v-model="entity.locked"></lz-dic-select>
+                </el-form-item>
+            </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" type="info" @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+    </div>
+</div>
+</body>
+<script src="/business/staff/staffInfo.js"></script>
+</html>

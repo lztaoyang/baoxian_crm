@@ -1,0 +1,150 @@
+package ${package.Entity};
+
+#if(${activeRecord})
+import com.baomidou.mybatisplus.activerecord.Model;
+#end
+#foreach($pkg in ${table.importPackages})
+import ${pkg};
+#end
+import java.io.Serializable;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+/**
+ * <p>
+ * ${table.comment}
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+@ApiModel(value = "${table.comment}",description="${entity}")
+#if(${table.convert})
+@TableName("${table.name}")
+#end
+#if(${superEntityClass})
+public class ${entity} extends ${superEntityClass}#if(${activeRecord})#end {
+#elseif(${activeRecord})
+public class ${entity} extends Model<${entity}> {
+#else
+public class ${entity} implements Serializable {
+#end
+
+    private static final long serialVersionUID = 1L;
+
+#foreach($field in ${table.fields})
+#if(!${field.defaultFlag})
+#if(${field.keyFlag})
+#set($keyPropertyName=${field.propertyName})
+#end
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+#if (${field.fieldStrategy.getKey().equals(1)})
+	@ApiModelProperty(value = "${field.comment}", required = true)
+#else
+	@ApiModelProperty(value = "${field.comment}", required = false)
+#end
+#if(${field.convert})
+#if(${field.keyFlag})
+	@TableId("${field.name}")
+#else
+	@TableField("${field.name}")
+#end
+#end
+	private ${field.propertyType} ${field.propertyName};
+#end
+#end
+
+#foreach($field in ${table.fields})
+#if(!${field.defaultFlag})
+#if(${field.propertyType.equals("Boolean")})
+#set($getprefix="is")
+#else
+#set($getprefix="get")
+#end
+
+	public ${field.propertyType} ${getprefix}${field.capitalName}() {
+		return ${field.propertyName};
+	}
+
+#if(${entityBuliderModel})
+	public ${entity} set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
+#else
+	public void set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
+#end
+		this.${field.propertyName} = ${field.propertyName};
+#if(${entityBuliderModel})
+		return this;
+#end
+	}
+#end
+#end
+
+#if(${entityColumnConstant})
+#foreach($field in ${table.fields})
+	public static final String ${field.name.toUpperCase()} = "${field.name}";
+
+#end
+#end
+#if(${activeRecord})
+	@Override
+	protected Serializable pkVal() {
+#if(${keyPropertyName})
+		return this.${keyPropertyName};
+#else
+		return this.id;
+#end
+	}
+
+#end
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getSimpleName());
+		sb.append(" [");
+		sb.append("Hash = ").append(hashCode());
+#foreach($field in ${table.fields})
+		sb.append(", ${field.propertyName}=").append(get${field.capitalName}());
+#end
+		sb.append("]");
+		return sb.toString();
+	}
+
+	/**
+	 */
+	@Override
+	public boolean equals(Object that) {
+		if (this == that) {
+			return true;
+		}
+		if (that == null) {
+			return false;
+		}
+		if (getClass() != that.getClass()) {
+			return false;
+		}
+		${entity} other = (${entity}) that;
+		return (1==1
+#foreach($field in ${table.fields})
+				&&this.get${field.capitalName}() == null ? other.get${field.capitalName}() == null : this.get${field.capitalName}().equals(other.get${field.capitalName}())
+#end
+				);
+	}
+
+	/**
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+#foreach($field in ${table.fields})
+		result = prime * result + ((get${field.capitalName}() == null) ? 0 : get${field.capitalName}().hashCode());
+#end
+		return result;
+	}
+}

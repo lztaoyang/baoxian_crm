@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.ad.cost.mapper.CostMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from ad_cost
+		<where>
+		    enable_ = 1
+			<if test="cm.costTime != null and cm.costTime != ''">
+				and to_days(cost_time) = to_days(#{cm.costTime})
+			</if>
+			<if test="cm.totalCost != null and cm.totalCost != ''">
+				and total_cost = #{cm.totalCost}
+			</if>
+		</where>
+		order by cost_time desc
+	</select>
+	
+	<delete id="delChannelByCostId">
+		delete from ad_channel_cost where cost_id = #{costId}
+	</delete>
+	
+	<!-- 日统计报表 -->
+	<select id="queryReortDay" resultType="java.util.Map">
+		SELECT
+			cost_time AS costTime,
+			total_cost AS totalCost,
+			ROUND(total_cost / allots, 2) AS avgCost,
+			allots,
+			applys,
+			newAmounts,
+			newUsers,
+			amounts,
+			longAmounts,
+      longAmount,
+      longNums
+		FROM
+			(
+				SELECT
+					ac.cost_time,
+					ac.total_cost
+				FROM
+					ad_cost ac
+				WHERE ac.enable_ = 1	
+			) a
+		LEFT JOIN (
+			SELECT
+				DATE_FORMAT(t.creater_time, '%Y-%m-%d') AS allot_time,
+				count(*) allots
+			FROM
+				t_resource_allot t
+			WHERE
+				t.type = 1 and t.channel != '00'
+			GROUP BY
+				TO_DAYS(t.creater_time)
+		) b ON a.cost_time = b.allot_time
+		LEFT JOIN (
+			SELECT
+				DATE_FORMAT(csa.audit_time, '%Y-%m-%d') audit_time,
+				COUNT(*) applys,
+				SUM(
+					IF (
+						csa.insure_num = 1,
+						csa.amount,
+						0
+					)
+				) newAmounts,
+				sum(IF (csa.insure_num = 1,1,0)) newUsers,
+				sum(csa.amount) amounts,
+				sum(csa.amount) longAmount,
+				sum(1) longNums,
+        ROUND(sum(csa.amount)/sum(1)) longAmounts
+			FROM
+				crm_sign_apply csa
+			WHERE
+				csa.sign_status = 5 and csa.enable_ = 1
+			GROUP BY
+				TO_DAYS(csa.audit_time)
+		) c ON a.cost_time = c.audit_time
+		<where>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(a.cost_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(a.cost_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+		order by costTime desc
+	</select>
+	
+	<!-- 推广客户明细表  -->
+	<select id="queryReportCustomerDetail" resultType="java.util.Map">
+		SELECT
+			ra.executer executer, <!-- 执行人 -->
+			r.enter_time enterTime,<!-- 入库时间 -->
+			c.first_applyed_time applyTime,<!-- 签单时间 -->
+			c.NAME name,<!-- 姓名 -->
+			ra.fuzzy_mobile mobile,<!-- 手机号码 -->
+			ra.content content,<!-- 内容 -->
+			ra.plan_code planCode,<!-- 专题名 -->
+			ra.plan_name planName,<!-- 计划名 -->
+			ra.source_url sourceUrl,<!-- 来源地址 -->
+			ra.user_agent userAgent,<!-- userAgent浏览器 -->
+			r.flow_id flowId,<!-- 所在流程 -->
+			if(ra.channel is null, '00', ra.channel) fromInfo,<!-- 来源渠道 -->
+			c.insure_num insureNum,<!-- 签单次数  -->
+			c.insure_money insureMoney,<!-- 签单总金额  -->
+			ra.allot_time,<!-- 分配时间 -->
+      		ra.type,<!-- 分配结果 -->
+      		ra.sms_check smsCheck,<!-- 短信验证 -->
+      		ra.phone_status phoneStatus,<!-- 号码状态 -->
+      		CONCAT(r.id,'a') customerId,
+      		if(r.city is null, r.province, CONCAT(r.province, r.city)) region
+		FROM
+			 t_resource_allot ra
+	         left JOIN crm_resource r on r.allot_id = ra.id
+	         left join crm_customer c on r.id = c.id 
+		<where>
+		    1 = 1 and ra.channel != 'personal'
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(r.enter_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(r.enter_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.signStartTime != null and cm.signStartTime != ''">
+				and TO_DAYS(c.first_applyed_time) &gt;= TO_DAYS(#{cm.signStartTime})
+			</if>
+			<if test="cm.signEndTime != null and cm.signEndTime != ''">
+				and TO_DAYS(c.first_applyed_time) &lt;= TO_DAYS(#{cm.signEndTime})
+			</if>
+			<if test="cm.executer != null and cm.executer != ''">
+				and ra.executer = #{cm.executer}
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+				and ra.channel = #{cm.fromInfo}
+			</if>
+			<if test="cm.smsCheck != null">
+				and ra.sms_check = #{cm.smsCheck}
+			</if>
+			<if test="cm.phoneStatus != null">
+				and ra.phone_status = #{cm.phoneStatus}
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and r.flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.isSign != null and cm.isSign != ''">
+				and r.is_sign = #{cm.isSign}
+			</if>
+		</where>
+		<choose>
+			<when test="cm.flowId != '999'">order by enterTime desc</when>
+			<otherwise>order by applyTime desc</otherwise>
+		</choose>
+		
+	</select>
+	
+	<!-- 通过ID查询客户明细  -->
+	<select id="queryCustomerDetail" resultType="java.util.Map">
+		SELECT
+			t.relation, <!-- 为谁投保 -->
+			if(t.insurance_name is null,'', t.insurance_name) insuranceName,<!-- 产品名称 -->
+			t.amount,<!-- 缴费 -->
+			t.amount_term amountTerm,<!-- 缴费方式 -->
+			if(c.age is null,'', c.age) age,<!-- 年龄 -->
+			if(c.sex is null,'', c.sex) sex,<!-- 性别 -->
+			if(c.province is null,'', c.province) province,
+			if(c.city is null,'', c.city) city  <!-- 区域 -->
+		FROM
+			crm_sign_apply t,
+			crm_customer c
+		WHERE
+			t.customer_id = c.id and t.customer_id = #{cm.customerId} and t.enable_ = 1
+	</select>
+	
+	<!-- 渠道统计报表 -->
+	<select id="queryChannelTotal" resultType="java.util.Map">
+		SELECT
+		    a.channel, <!-- 渠道 -->
+			ROUND(a.cost) cost, <!-- 推广费 -->
+			c.resourceNum,<!-- 资源数 -->
+			b.customerNum,<!-- 客户数 -->
+			b.applyNum,<!-- 成交数 -->
+			ROUND(b.amounts) amounts,<!-- 成交保费 -->
+			ROUND(cost / resourceNum) resourceCost,<!-- 资源成本 -->
+			ROUND(cost / customerNum) customerCost,<!-- 客户成本 -->
+			ROUND(amounts / customerNum) customerAmount,<!-- 人均保费 -->
+		  ROUND(amounts/cost*100,2) costAmount<!-- 投入产出比 -->
+		FROM
+			(
+				SELECT
+					sum(r.cost) cost,
+					r.channel
+				FROM
+					ad_channel_cost r
+				<where>
+					channel !='personal'
+					<if test="cm.startTime != null and cm.startTime != ''">
+						and TO_DAYS(r.cost_time) &gt;= TO_DAYS(#{cm.startTime})
+					</if>
+					<if test="cm.endTime != null and cm.endTime != ''">
+						and TO_DAYS(r.cost_time) &lt;= TO_DAYS(#{cm.endTime})
+					</if>
+				</where>
+				GROUP BY
+					r.channel
+			) a
+		LEFT JOIN (
+			SELECT
+				r.from_info,
+				COUNT(a.id) applyNum,
+				count(DISTINCT a.customer_id) customerNum,
+				sum(a.amount) amounts
+			FROM
+				crm_resource r
+			INNER JOIN crm_sign_apply a ON r.id = a.customer_id
+			<where>
+				r.from_info !='personal' AND a.sign_status = 5 and a.enable_ = 1
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(r.enter_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(r.enter_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+			</where>
+			GROUP BY
+				r.from_info
+		) b ON a.channel = b.from_info
+		LEFT JOIN (
+			SELECT
+				count(*) resourceNum,
+				r.channel
+			FROM
+				t_resource_allot r
+			<where>
+				r.channel !='personal' and r.type = 1
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(r.creater_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(r.creater_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+			</where>
+			GROUP BY
+				r.channel
+		) c ON a.channel = c.channel
+		<where>
+			1=1
+			<if test="cm.channel != null and cm.channel != ''">
+				and a.channel = #{cm.channel}
+			</if>
+			order by costAmount desc
+		</where>
+	</select>
+	
+	<!-- 执行人绩效 -->
+	<select id="queryExecuterTotal" resultType="java.util.Map">
+	SELECT
+	  	aa.code_ executer,
+		ROUND(a.cost) cost,
+		c.resourceNum,
+		b.customerNum,
+		b.applyNum,
+		ROUND(b.amounts) amounts,
+		ROUND(cost / resourceNum) resourceCost,
+		ROUND(cost / customerNum) customerCost,
+		ROUND(amounts / customerNum) customerAmount,
+	  ROUND(amounts/cost*100,2) costAmount
+	FROM
+	(select code_ from sys_dic t where t.type_ = 'RESOURCE_OP1' AND t.code_ != '00' and t.locked_ = 1) aa
+	LEFT JOIN (
+			SELECT
+				sum(r2.cost) cost,
+				r2.executer
+			FROM
+				ad_channel_cost r2 
+			<where>
+				r2.executer != '00' and r2.channel != 'pyqjf'
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(r2.cost_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(r2.cost_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>	
+			</where>
+			GROUP BY r2.executer
+		) a on aa.code_ = a.executer
+	LEFT JOIN (
+		SELECT
+			ra.executer,
+			COUNT(a1.id) applyNum,
+			count(DISTINCT a1.customer_id) customerNum,
+			sum(a1.amount) amounts
+		FROM
+			crm_sign_apply a1
+		INNER JOIN crm_resource r1 on r1.id = a1.customer_id
+		INNER JOIN t_resource_allot ra ON r1.allot_id = ra.id
+		<where>
+			ra.executer != '00' AND a1.sign_status = 5 AND a1.enable_ = 1
+		<if test="cm.startTime != null and cm.startTime != ''">
+			and TO_DAYS(r1.enter_time) &gt;= TO_DAYS(#{cm.startTime})
+		</if>
+		<if test="cm.endTime != null and cm.endTime != ''">
+			and TO_DAYS(r1.enter_time) &lt;= TO_DAYS(#{cm.endTime})
+		</if>	
+		</where>
+		GROUP BY ra.executer
+	) b ON a.executer = b.executer
+	LEFT JOIN (
+		SELECT
+			count(*) resourceNum,
+			r.executer
+		FROM
+			t_resource_allot r
+		<where>
+			r.executer != '00' and r.type = 1
+		<if test="cm.startTime != null and cm.startTime != ''">
+			and TO_DAYS(r.creater_time) &gt;= TO_DAYS(#{cm.startTime})
+		</if>
+		<if test="cm.endTime != null and cm.endTime != ''">
+			and TO_DAYS(r.creater_time) &lt;= TO_DAYS(#{cm.endTime})
+		</if>	
+		</where>	
+		GROUP BY r.executer
+	) c ON a.executer = c.executer
+	<where>
+		<if test="cm.executer != null and cm.executer != ''">
+			and a.executer = #{cm.executer}
+		</if>
+	</where>
+	order by amounts desc
+	</select>
+	
+	<!-- 市场人员绩效 -->
+	<select id="queryUserTotal" resultType="java.util.Map">
+	SELECT
+		u.user_name userName,<!-- 姓名 -->
+		resourceNum,<!-- 资源数 -->
+		customerNum,<!-- 客户数 -->
+		applyNum,<!-- 单量 -->
+		amounts,<!-- 总保费 -->
+		ROUND(c.resourceCost * resourceNum) resourceCost,<!-- 资源成本 -->
+		ROUND((c.resourceCost * resourceNum) / applyNum) applyCost,<!-- 签单成本 -->
+			CASE 
+		WHEN ROUND(
+				(c.resourceCost * resourceNum) / applyNum
+			) &lt;= 0 or ROUND(
+				(c.resourceCost * resourceNum) / applyNum
+			) is null THEN
+			0
+		ELSE
+			ROUND(
+				amounts / (c.resourceCost * resourceNum) * 100,
+				2
+			)
+		END AS costAmount<!-- 产出比 -->
+	FROM sys_user u
+	LEFT JOIN (
+			<!-- 查询日期范围内按市场人员维度统计成交客户数、签单数、签单保费累计 -->
+			SELECT
+				<choose>
+					<when test="cm.userType == 0">sa.minister_id uid,</when>
+					<when test="cm.userType == 1">sa.director_id uid,</when>
+					<when test="cm.userType == 2">sa.manager_id uid,</when>
+					<otherwise>sa.saler_id uid, <!-- 市场人员ID --></otherwise>
+				</choose>
+				count(DISTINCT customer_id) customerNum,<!-- 客户数 -->
+				count(*) applyNum,<!-- 签单数 -->
+				sum(sa.amount) amounts<!-- 总签单保费 -->
+			FROM crm_sign_apply sa
+			<where>
+				sa.sign_status = 5 and sa.enable_ = 1<!-- 只统计成交 -->
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>	
+			</where>
+			<choose>
+				<when test="cm.userType == 0">GROUP BY sa.minister_id <!-- 按总经理统计 --></when>
+				<when test="cm.userType == 1">GROUP BY sa.director_id <!-- 按总监统计 --></when>
+				<when test="cm.userType == 2">GROUP BY sa.manager_id <!-- 按经理统计 --></when>
+				<otherwise>GROUP BY sa.saler_id <!-- 按经纪人统计 --></otherwise>
+			</choose>
+		) a on a.uid = u.id 
+	LEFT JOIN (
+		<!-- 查询日期范围内分配给市场人员的资源数 -->
+		SELECT
+			<choose>
+				<when test="cm.userType == 0">ra.minister_id uid, <!-- 按总经理统计 --></when>
+				<when test="cm.userType == 1">ra.director_id uid, <!-- 按总监统计 --></when>
+				<when test="cm.userType == 2">ra.manager_id uid, <!-- 按经理统计 --></when>
+				<otherwise>ra.saler_id uid, <!-- 按经纪人统计 --></otherwise>
+			</choose>
+			count(*) resourceNum<!-- 分配资源数 -->
+		FROM t_resource_allot ra
+		<where>
+			ra.type = 1<!-- 只统计分配成功 -->
+			<choose>
+				<when test="cm.userType == 0">and ra.minister_id IS NOT NULL <!-- 按总经理统计 --></when>
+				<when test="cm.userType == 1">and ra.director_id IS NOT NULL <!-- 按总监统计 --></when>
+				<when test="cm.userType == 2">and ra.manager_id IS NOT NULL<!-- 按经理统计 --></when>
+				<otherwise>and ra.saler_id IS NOT NULL AND ra.saler_id != 0 <!-- 按经纪人统计 --></otherwise>
+			</choose>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(ra.allot_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(ra.allot_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>	
+		</where>
+		<choose>
+			<when test="cm.userType == 0">GROUP BY ra.minister_id <!-- 按总经理统计 --></when>
+			<when test="cm.userType == 1">GROUP BY ra.director_id <!-- 按总监统计 --></when>
+			<when test="cm.userType == 2">GROUP BY ra.manager_id <!-- 按经理统计 --></when>
+			<otherwise>GROUP BY ra.saler_id <!-- 按经纪人统计 --></otherwise>
+		</choose>
+	) b ON a.uid = b.uid,
+	 (
+		SELECT
+			<!-- 推广费/总分配资源树 = 平均资源成本 -->
+			costs / resourcesNum AS resourceCost
+		FROM
+			(
+				<!-- 查询日期范围内所投入的推广费合计 -->
+				SELECT
+					SUM(total_cost) costs
+				FROM ad_cost
+				<where>
+					<if test="cm.startTime != null and cm.startTime != ''">
+						and TO_DAYS(cost_time) &gt;= TO_DAYS(#{cm.startTime})
+					</if>
+					<if test="cm.endTime != null and cm.endTime != ''">
+						and TO_DAYS(cost_time) &lt;= TO_DAYS(#{cm.endTime})
+					</if>	
+				</where>
+			) ac,
+			(
+				<!-- 查询日期范围内所分配的资源总数 -->
+				SELECT count(*) resourcesNum FROM t_resource_allot ra
+				<where>
+				 	ra.type = 1
+					<if test="cm.startTime != null and cm.startTime != ''">
+						and TO_DAYS(ra.allot_time) &gt;= TO_DAYS(#{cm.startTime})
+					</if>
+					<if test="cm.endTime != null and cm.endTime != ''">
+						and TO_DAYS(ra.allot_time) &lt;= TO_DAYS(#{cm.endTime})
+					</if>	
+				</where>
+			) ra
+	) c
+		<where>
+			<choose>
+				<when test="cm.userType == 0">u.user_group = 88002005 <!-- 按总经理统计 --></when>
+				<when test="cm.userType == 1">u.user_group = 88002003 <!-- 按总监统计 --></when>
+				<when test="cm.userType == 2">u.user_group = 88002002 <!-- 按经理统计 --></when>
+				<otherwise>u.user_group = 88002001 <!-- 按经纪人统计 --></otherwise>
+			</choose>
+			and u.locked_ = 0 and u.enable_ = 1
+		</where>
+	</select>
+	
+	<!-- 推广客户签单明细表  -->
+	<select id="exportApplyDetail" resultType="java.util.LinkedHashMap">
+		SELECT
+			r.enter_time enterTime,-- <!-- 入库时间 -->
+			ra.allot_time allot_time, -- <!-- 分配时间 -->
+			c.first_applyed_time applyTime,-- <!-- 签单时间 -->
+			sd2.code_text executer, -- <!-- 执行人 -->
+			c.NAME name,-- <!-- 姓名 -->
+			ra.fuzzy_mobile mobile,-- <!-- 手机号码 -->
+			c.insure_num insureNum,-- <!-- 签单次数  -->
+			c.insure_money insureMoney,-- <!-- 签单总金额  -->
+			ra.content content,-- <!-- 内容 -->
+			ra.plan_code planCode,-- <!-- 专题名 -->
+			ra.plan_name planName,-- <!-- 计划名 -->
+			if(r.city is null, r.province, CONCAT(r.province, r.city)) region,
+			ra.source_url sourceUrl,
+			ra.user_agent userAgent,
+			sd3.code_text channel,
+			sd4.code_text phoneStatus
+		FROM
+			t_resource_allot ra
+			LEFT JOIN sys_dic sd2 ON sd2.code_=ra.executer and sd2.type_ = 'RESOURCE_OP'		
+			LEFT JOIN sys_dic sd3 ON sd3.code_=ra.channel and sd3.type_ = 'RESOURCE_CHANNEL1'
+			LEFT JOIN sys_dic sd4 ON sd4.code_=ra.phone_status and sd4.type_ = 'SMSCHECK'			 
+			left JOIN crm_resource r on r.allot_id = ra.id
+			left join crm_customer c on r.id = c.id  
+		<where>
+		   	1=1 and r.flow_id = 999 and ra.channel != 'personal'
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(r.enter_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(r.enter_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.signStartTime != null and cm.signStartTime != ''">
+				and TO_DAYS(c.first_applyed_time) &gt;= TO_DAYS(#{cm.signStartTime})
+			</if>
+			<if test="cm.signEndTime != null and cm.signEndTime != ''">
+				and TO_DAYS(c.first_applyed_time) &lt;= TO_DAYS(#{cm.signEndTime})
+			</if>
+			<if test="cm.executer != null and cm.executer != ''">
+				and ra.executer = #{cm.executer}
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+				and ra.channel = #{cm.fromInfo}
+			</if>
+			<if test="cm.smsCheck != null">
+				and ra.sms_check = #{cm.smsCheck}
+			</if>
+			<if test="cm.phoneStatus != null">
+				and ra.phone_status = #{cm.phoneStatus}
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and r.flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.isSign != null and cm.isSign != ''">
+				and r.is_sign = #{cm.isSign}
+			</if>
+		</where>
+		order by applyTime desc
+	</select>
+</mapper>

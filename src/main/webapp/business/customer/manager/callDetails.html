@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!-- <script src="/js/lib/jquery.min.1.12.4.js"></script> -->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:30px 10px 10px 10px;">
+    </el-row>
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+		    	<el-form-item label="所有人" style="font-size: 13px;" prop="subordinate">
+			  		<lz-dic-select style="width:100px;" dic-type="SUBORDINATES" v-model="searchParams.subordinate"></lz-dic-select>
+			  	</el-form-item>
+	    		<el-form-item label="今天通话有效参数（秒）：" style="font-size: 13px;" prop="validTiemLength">
+		    		<el-input size="small" type="number" style="width:120px" v-model="searchParams.validTiemLength" placeholder="默认：60秒" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            <el-table-column type="index" width="30" align="center"></el-table-column>
+            
+            <el-table-column
+                    prop="userName"
+                    min-width="70"
+                    v-bind:show-overflow-tooltip="true"
+                    label="用户名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="dayNum"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日拨打次数"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="dayValidNum"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日有效次数"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="dayValidLength"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日有效通话时长"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{timerFormat(scope.row.dayValidLength)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="weekNum"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="本周拨打次数"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="weekValidLength"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="本周有效通话时长"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{timerFormat(scope.row.weekValidLength)}}</span>
+                	</template>
+                </el-table-column>
+            
+        </el-table>
+    </el-row>
+</div>
+</body>
+<script type="text/javascript">
+var vuePage = new Vue({
+    el: '#app',
+    data: {
+    	sourceUrl:"crm/developDayCall",
+    	//查询参数
+        searchParams: {directorId:'',managerId:'',validTiemLength:'',subordinate:'',},
+        //分页数据,其中包含分页信息与数据列表
+        pageData: {},
+    },
+    created: function () {
+        var self = this;
+        self.readList();
+    },
+    methods: {
+        //查询
+        readList: function () {
+            var params = {
+            	asc: false,
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 10)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchParams) {
+            	if (typeof this.searchParams[item] == 'boolean'){
+                    params[item] = this.searchParams[item];
+                }else if (this.searchParams[item] != "") {
+                    params[item] = this.searchParams[item];
+                }
+            }
+            this.$http.put(this.sourceUrl+'/read/developTelemarketingList', params)
+                    .then(function (response) {
+                        this.pageData = response.data;
+                    });
+        },
+        
+    }
+});
+</script>
+</html>

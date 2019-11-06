@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>推广分配计划表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <style type="text/css">
+    	.el-table .en-row .el-table_1_column_3{
+	    background: #50BFFF;
+	    }
+    	.el-table .un-row .el-table_1_column_3{
+	    background: #FFAEB9;
+	  	}
+    </style>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:30px 10px 10px 10px;">
+        
+    </el-row>
+    <hr style="margin:10px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="allotTypeData" label-position="right" style="margin: 6px" >
+	    		<el-form-item label="推广分配类型：" style="font-size: 13px;">
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" :plain="allotType0" type="success" @click="changeAllotType(allotTypeData.id,0)">停止分配</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button size="small" :plain="allotType1" type="success" @click="changeAllotType(allotTypeData.id,1)">自动分配</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button size="small" :plain="allotType2" type="success" @click="changeAllotType(allotTypeData.id,2)">计划分配</el-button>
+                </el-form-item>
+            </el-form>
+    	</el-row>
+    <hr style="margin:10px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="sharedPoolRatioData" label-position="right" style="margin: 6px" >
+	    		<el-form-item label="穿插分配共享池资源比例：" style="font-size: 13px;">
+    				<el-input style="width:100px;" size="small" v-model="sharedPoolRatioData.valueString" placeholder="比例" ></el-input>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="saveRatio(sharedPoolRatioData.id,sharedPoolRatioData.valueString)">修改比例</el-button>
+                </el-form-item>
+            </el-form>
+    	</el-row>
+    <hr style="margin:0px ;"/>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  :row-class-name="tableRowClassName"
+                  style="width: 100%"
+        >
+            <el-table-column label="计划分配时间段" align="center">
+            
+            <el-table-column
+                    prop="startTime"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="开始时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{hourMinuteFormat(scope.row.startTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="endTime"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="结束时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{hourMinuteFormat(scope.row.endTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="enable"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否启用"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="ISTRUE" :dic-code="scope.row.enable"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="170"
+                    align="center">
+                <template scope="scope">
+                    <el-button-group size="small">
+                        <el-button size="small" type="warning" @click="showEditDialog(scope.row.id)">编辑</el-button>
+                        <el-button size="small" type="danger" @click="del(scope.row.id)">删除</el-button>
+                    </el-button-group>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="8">
+            <el-button size="small" type="info" @click="showAddDialog">新增</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+<!---------------------------弹出编辑窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="entity.id?'编辑':'新增'" :visible.sync="editFormVisible">
+        <el-form ref="editForm" :model="entity" :rules="rules">
+        <el-input size="small" v-model="entity.id" v-show="false" ></el-input>
+    	<el-col :span="24">
+        <el-form-item label="时间范围" label-width="100px" prop="rangeTime">
+    		<el-time-picker
+    			style="width:170px"
+			    is-range
+			    v-model="rangeTime"
+			    format="HH:mm"
+			    placeholder="选择时间范围">
+			</el-time-picker>
+        </el-form-item>
+        </el-col>
+        <el-col :span="24">
+	   	<el-form-item label="是否启用" label-width="100px" prop="enable">
+		    <lz-dic-select v-model="entity.enable" dic-type="ISTRUE"></lz-dic-select>
+		</el-form-item>
+		</el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="editFormVisible = false">取 消</el-button>
+            <el-button size="small" type="info"  @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script type="text/javascript">
+var vuePage = new Vue({
+    el: '#app',
+    data: {
+    	sourceUrl:"t/allotPlanning",
+        //是否显示编辑窗口
+        editFormVisible: false,
+        //查询参数
+        searchParams: {startTime:'',endTime:'',enable:''},
+        //分页数据,其中包含分页信息与数据列表
+        pageData: {},
+        //当前操作的实体（编辑/新增）
+        entity: {startTime:'',endTime:'',enable:''},
+        rangeTime : [new Date(2018, 05, 15, 0, 10), new Date(2018, 05, 15, 23, 50)],
+        //表单校验规则 api:https://github.com/yiminghe/async-validator
+        rules: {
+        	
+        },
+    	allotTypeData : {},
+    	sharedPoolRatioData : {},
+    	
+    	allotType0 : true,
+    	allotType1 : true,
+    	allotType2 : true,
+    },
+    created: function () {
+        var self = this;
+      	//分配类型
+        self.propertiesAllotTypeList();
+      	//共享池资源穿插分配比例
+        self.propertiesSharedPoolRatioList();
+	    //计划时间
+        self.readList();
+    },
+    methods: {
+        //查询
+        readList: function () {
+            var params = {
+                asc: false,
+                orderBy: "id",
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 10)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchParams) {
+            	if (typeof this.searchParams[item] == 'boolean'){
+                    params[item] = this.searchParams[item];
+                }else if (this.searchParams[item] != "") {
+                    params[item] = this.searchParams[item];
+                }
+            }
+            //计划时间
+            this.$http.put(this.sourceUrl+'/read/list', params)
+                    .then(function (response) {
+                        this.pageData = response.data;
+                    });
+        },
+        //弹出新增窗口
+        showAddDialog: function () {
+            for (var item in this.entity) {
+                this.entity[item] = "";
+            }
+            this.editFormVisible = true;
+        },
+        //弹出编辑窗口
+        showEditDialog: function (entityId) {
+            this.$http.put(this.sourceUrl+'/read/detail', {id: entityId})
+                    .then(function (response) {
+                        this.entity = response.data.data;
+                        var range = new Array();
+                        range.push(new Date(this.entity.startTime));
+                        range.push(new Date(this.entity.endTime));
+                        this.rangeTime = range;
+                        this.editFormVisible = true;
+                    });
+        },
+        //保存
+        save: function () {
+            var self = this;
+            if (self.rangeTime && typeof(self.rangeTime) != "undefined" && self.rangeTime != "") {
+				self.entity.startTime = "";
+				self.entity.endTime = "";
+				self.entity.startTime = self.rangeTime[0];
+				self.entity.endTime = self.rangeTime[1];
+			}
+            self.$refs["editForm"].validate(function(valid){
+                if (valid && self.entity.startTime != "" && self.entity.endTime != "") {//校验通过
+                    self.$http.post(self.sourceUrl, self.entity)
+                            .then(function (response) {
+                                var result = response.data.data;
+                                self.editFormVisible = false;
+                                if (self.entity.id) {//修改
+                                    for (var i = 0; i < self.pageData.data.length; i++) {
+                                        if (self.pageData.data[i].id === result.id) {
+                                            Vue.set(self.pageData.data, i, result);
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    self.pageData.data.unshift(result);
+                                }
+                            });
+                } else {
+                    self.$message({
+                        message: '请按要求输入内容',
+                        type: 'warning'
+                    });
+                    return false;
+                }
+            });
+
+        },
+        //删除
+        del: function (entityIds) {
+            var params = {};
+            if (entityIds) {
+                //删除单个实体
+                if (entityIds instanceof Array) {
+                    params.ids = entityIds;
+                } else {//批量删除
+                    params.ids = [entityIds];
+                }
+            }
+            var self = this;
+            self.$confirm('您确定要删除'+params.ids.length+'条记录吗?, 删除将无法恢复!', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(function () {
+                self.$http.delete(self.sourceUrl, {body: params})
+                        .then(function (response) {
+                            var tempIndexArray = [];
+                            //同步更新界面中的表格
+                            for(var j in params.ids){
+                                for(var i in self.pageData.data){
+                                    if (self.pageData.data[i].id == params.ids[j]){
+                                        self.pageData.data.splice(i,1);
+                                        break;
+                                    }
+                                }
+                            }
+                            console.log(response);
+                            //self.entity = response.data.data;
+                        });
+            }).catch(function(){});
+        },
+        hourMinuteFormat : function (v) {
+        	if (v == null || v == '') {
+        		return "";
+        	} else if (typeof v == 'string') {
+        		return v.substring(11,16);
+        	} else{
+        		return "";
+        	}
+        },
+        tableRowClassName : function (row, index) {
+        	if ("true" == row.enable) {
+        		return 'en-row';
+            } else if ("false" == row.enable) {
+            	return 'un-row';
+            }
+            return '';
+        },
+        //分配类型
+        propertiesAllotTypeList : function () {
+        	var self = this;
+        	self.$http.put('sys/properties/queryByKeyString',{"keyString":"t.resource.allot.type"})
+            .then(function (response) {
+            	self.allotTypeData = response.data.data;
+            	self.allotTypeSwitch(self.allotTypeData.valueString);
+            });
+			if (!self.allotTypeData || null == self.allotTypeData) {
+				self.$notify.error({
+                    title: '错误',
+                    message: '查询分配类型出错'
+                  });
+			}
+        },
+        allotTypeSwitch : function (v) {
+        	var self = this;
+        	if (v == "0") {
+        		self.allotType0 = false;
+        		self.allotType1 = true;
+        		self.allotType2 = true;
+			} else if (v == "1") {
+				self.allotType0 = true;
+        		self.allotType1 = false;
+        		self.allotType2 = true;
+			} else if (v == "2") {
+				self.allotType0 = true;
+        		self.allotType1 = true;
+        		self.allotType2 = false;
+			}
+        },
+        changeAllotType : function (entityId,newType) {
+        	var self = this;
+        	self.$http.post('sys/properties',{"id":entityId,"valueString":newType})
+            .then(function (response) {
+            	self.allotTypeData = response.data.data;
+            	self.allotTypeSwitch(self.allotTypeData.valueString);
+            });
+			if (!self.allotTypeData || null == self.allotTypeData) {
+				self.$notify.error({
+                    title: '错误',
+                    message: '查询分配类型出错'
+                  });
+			}
+        },
+        //共享池资源穿插分配比例
+        propertiesSharedPoolRatioList : function () {
+        	var self = this;
+        	self.$http.put('sys/properties/queryByKeyString',{"keyString":"t.resource.allot.sharedPool.ratio"})
+            .then(function (response) {
+            	self.sharedPoolRatioData = response.data.data;
+            });
+            if (!self.sharedPoolRatioData || null == self.sharedPoolRatioData) {
+            	self.$notify.error({
+                    title: '错误',
+                    message: '查询穿插分配比例出错'
+                  });
+			}
+        },
+        saveRatio : function (entityId,newRatio) {
+        	var self = this;
+        	self.$http.post('sys/properties',{"id":entityId,"valueString":newRatio})
+            .then(function (response) {
+            	self.sharedPoolRatioData = response.data.data;
+            });
+            if (!self.sharedPoolRatioData || null == self.sharedPoolRatioData) {
+            	self.$notify.error({
+                    title: '错误',
+                    message: '查询穿插分配比例出错'
+                  });
+			}
+        }
+    }
+});
+</script>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!-- <script src="/js/lib/jquery.min.1.12.4.js"></script> -->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<input type="hidden" id="flow" value="402"/>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 10px 10px;">
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="18">
+            <el-button size="small" type="warning" @click="showAllotDialog" v-show="isManager">资源调配到已添加微信资源</el-button>
+        </el-col>
+    </el-row>
+<!-- 表尾 结束-->
+<!---------------------------弹出资源调配窗口 开始----------------------------------------------------------------->
+    <el-dialog title="市场部" :visible.sync="allotVisible">
+          <el-row>
+		  	<el-col :span="12">
+		        <el-card class="box-card">
+		           	<el-tree ref="userTree" :data="userTreeData" node-key="id" accordion
+                 show-checkbox="false" highlight-current @node-click="treeNodeClick"></el-tree>
+		        </el-card>
+		    </el-col>
+		    <el-col :span="12">
+		        <el-card class="box-card">
+		            <el-row>
+                    <el-table id="12324"
+                              :data="deptPageData.data"
+                              ref="entityTable"
+                              max-height="450"
+                              :row-key="key"
+                              empty-text="-"
+                              append="加载中..."
+                              :row-style="{'font-size':'13px'}"
+                              style="width: 100%"
+                              ref="singleTable"
+                              highlight-current-row
+                              @current-change="allotCurrentChange">
+                        <el-table-column v-for="item in tableColumns"
+                                         :prop="item.prop"
+                                         min-width="100"
+                                         v-bind:show-overflow-tooltip="true"
+                                         :label="item.label">
+                        </el-table-column>
+                    </el-table>
+                </el-row>
+		        </el-card>
+		    </el-col>
+		    </el-row>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="allotVisible = false">取 消</el-button>
+            <el-button size="small" type="info" @click="allot">分配</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin: 6px" >
+		    	<el-form-item label="客户姓名" style="font-size: 13px;" prop="name">
+		    		<el-input style="width:100px;" size="small" v-model="searchParams.name" placeholder="客户姓名" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item label="手机号" style="font-size: 13px;" prop="mobile">
+		    		<el-input style="width:100px;" size="small" v-model="searchParams.mobile" placeholder="手机号" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="所有人" style="font-size: 13px;" prop="subordinate">
+		    		<lz-dic-select style="width:100px;" dic-type="SUBORDINATES" v-model="searchParams.subordinate"></lz-dic-select>
+		    	</el-form-item>
+		    	<el-form-item label="业务员" style="font-size: 13px;" prop="salerId">
+					<el-select
+					style="width:110px;"
+				    v-model="searchParams.salerId"
+				    filterable
+				    remote
+				    placeholder="业务员"
+				    :remote-method="selectSaler"
+					:loading="loading">
+						<el-option
+							v-for="item in salerMap"
+							:key="item.value"
+							:label="item.label"
+							:value="item.value">
+						</el-option>
+					</el-select>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                    <el-button size="small" @click="flushAndReadList">清空并刷新</el-button>
+                </el-form-item>
+            </el-form>
+		</el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+                  :row-class-name="tableRowClassName"
+        >
+            <el-table-column
+                    type="selection"
+                    prop="id"
+                    align="center"
+            >
+            </el-table-column>
+            
+            <el-table-column
+                    prop="salerName"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="blackRemark"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="黑名单说明"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="remark"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="备注"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="lastCallRecord"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="最后通话内容"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="lastCallTime"
+                    min-width="128"
+                    v-bind:show-overflow-tooltip="true"
+                    label="最后通话时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.lastCallTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="demand"
+                    min-width="370"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户需求"
+                    align="left"
+                    >
+                    <template scope="scope">
+                    	<span>{{ demandFormat(scope.row.demand,scope.row.planCode) }}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorName"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属总监"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="customer.fromInfo"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="入库时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+		<el-col :span="12">
+			<el-form :inline="true" :model="addblackParams" label-position="right" style="margin: 6px" >
+		    	<el-form-item label="客户ID" style="font-size: 13px;" prop="id">
+		    		<el-input style="width:150px;" size="small" v-model="addblackParams.id" placeholder="客户ID" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item label="手机号" style="font-size: 13px;" prop="mobile">
+		    		<el-input style="width:100px;" size="small" v-model="addblackParams.mobile" placeholder="手机号" ></el-input>
+		    	</el-form-item>
+                <el-form-item>
+		            <el-button size="small" type="info" @click="showAddBlackDialog">录入黑名单</el-button>
+                </el-form-item>
+            </el-form>
+        </el-col>
+        <el-col :span="12" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+<!---------------------------弹出黑名单窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="后续强烈拒接的客户才能设置为黑名单" :visible.sync="blacklistFormVisible">
+        <el-row>
+	        <el-form ref="blacklistForm" :model="blacklistEntity">
+		    	<el-col :span="12">
+		    		<el-form-item label="姓名：" label-width="80px" prop="name">
+				        <span>{{ blacklistEntity.name }}</span>
+		    		</el-form-item>
+		        </el-col>
+		    	<el-col :span="12">
+			        <el-form-item label="手机号：" label-width="80px" prop="fuzzyMobile">
+				        <span>{{ blacklistEntity.fuzzyMobile }}</span>
+		    		</el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+			        <el-form-item label="" label-width="1px" prop="blackRemark">
+				    	<el-input type="textarea" :rows="6" size="small" placeholder="后续强烈拒接的客户才能设置为黑名单" v-model="blacklistEntity.blackRemark"></el-input>
+				    </el-form-item>
+		        </el-col>
+	        </el-form>
+        </el-row>
+    	<el-row type="flex" class="row-bg" justify="space-around">
+    		<span style="color:red;margin-top:10px;">空号、停机、不可聊等客户请使用丢弃功能，禁止使用黑名单！</span>
+	    	<el-button style="margin-top:10px;" size="small" type="info" @click="blacklistSave">保存到黑名单</el-button>
+    	</el-row>
+    </el-dialog>
+<!---------------------------弹出黑名单窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="/business/customer/resourceLeave.js"></script>
+</html>

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+    <meta name=”renderer” content=”webkit” />
+    <title>国诚客户管理系统</title>
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link rel="icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <script src="/js/agent/PbxTransfer.js"></script>
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+         .left-top
+         {
+             position: fixed;/*这是必须的*/
+             z-index: 999;
+             left:5px;/*这是必须的*/
+             top: 5px;/*这是必须的*/
+         }
+         .r_ks_box { text-align:center; position:absolute; right:40px; top:5px;position: fixed;/*这是必须的*/z-index: 999;}
+		.r_ks_box a { display:inline-block;border:1px solid #eee;border-radius:5px;-width:90px;  padding:5px;background:url(/img/lt_bg.gif) repeat-x left top;}
+		.r_ks_box a:hover { text-decoration:none;}
+		s.allIcon{display:inline-block;vertical-align:middle;text-decoration:line-through}
+		.col_ls { color:0076e3; font-size:12px; }
+		.col_ls:hover {color:0076e3;}
+		.col_ls s {background:url(/img/tx_ico.png) no-repeat;background-size:24px 24px;width:24px;height:24px; margin-right:5px;}
+		.el-table .info-row {
+			background: #F66;
+		}
+    </style>
+    <script>
+        $(function () {
+            var _jahDivs = $("div[autoheight]");
+            if (_jahDivs.length > 0) {
+                _jahDivs.css("overflow", "auto");
+                $(window).resize(function () {
+                    var _addHeight = $(window).height() - $("body").outerHeight(true);
+                    var _height = _jahDivs.height();
+                    _jahDivs.height(_height + _addHeight - (_jahDivs.outerHeight(true) - _height) / 2);
+                }).resize();
+            }
+        });
+        function changeFrameHeight() {
+            var ifm = document.getElementById("contentFrame");
+            ifm.height = document.documentElement.clientHeight;
+        }
+        function changeDivHeight(elid) {
+            var div = document.getElementById(elid);
+            div.style.height = document.documentElement.clientHeight;
+        }
+        window.onresize = function () {
+            changeFrameHeight();
+        }
+    </script>
+</head>
+<body>
+<div id="app">
+    <el-row id="menuCol" style="background-color: #324057" autoheight>
+        <el-col :span="menuSpan" style="height: 30px;padding: 5px;" v-show="menuSpan==4">
+            <el-row>
+                <el-col :span="16">
+                    <el-button-group>
+                        <el-button size="small" @click="restoreDefault">首页</el-button>
+                        <el-button size="small" @click="logout">退出<i class="el-icon-circle-cross el-icon--right"></i></el-button>
+                    </el-button-group>
+                </el-col>
+                <el-col :span="8" class="text-right">
+                        <el-button size="small" @click="alarmList">提醒</el-button>
+                </el-col>
+            </el-row>
+            <hr style="margin-bottom:5px ;margin-top:5px ;"/>
+            <el-row>
+                <el-menu class="el-menu-vertical-demo" unique-opened
+                         theme="dark">
+                    <el-submenu :index="meun.id" v-for="meun in meuns" :key="meun.id">
+                        <template slot="title">{{meun.menuName}}</template>
+                        <el-menu-item :index="subMenu.id" v-for="subMenu in meun.menuBeans" :key="subMenu.id" @click="menuClick(subMenu.request)">{{subMenu.menuName}}</el-menu-item>
+                    </el-submenu>
+                </el-menu>
+            </el-row>
+        </el-col>
+        <el-col :span="mainSpan" style="position:relative">
+            <iframe src="default.html" id="contentFrame" style="width:100%;" scrolling="auto" frameborder="0" marginheight="0" marginwidth="0" autoheight></iframe>
+        </el-col>
+    </el-row>
+<!---------------------------弹出全局窗口 结束----------------------------------------------------------------------->
+<!---------------------------弹出提示系统即将退出窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="360浏览器模式错误页面" size="tiny" :visible.sync="redisVisible">
+        <img src="/img/360.png" height="150px" width="1100px" alt="请使用360浏览器【极速模式】" />
+    </el-dialog>
+    <el-dialog title="提示切换模式" size="tiny" :visible.sync="redisVisible">
+        <img src="/img/tt.png" height="150px" width="1100px" alt="请使用360浏览器【极速模式】" />
+    </el-dialog>
+    <el-dialog title="360极速浏览器模式错误页面" size="tiny" :visible.sync="restartVisible">
+        <img src="/img/360j.png" height="150px" width="1100px" alt="请使用360极速浏览器【极速模式】" />
+    </el-dialog>
+<!---------------------------弹出提示系统即将退出窗口 结束----------------------------------------------------------------------->
+    <div class='left-top' v-show="menuSpan!=4"><el-button size="small" type="warning" icon="caret-right" @click="showMenu"></el-button></div>
+    
+    <el-dialog :visible.sync="alarmVisible">
+    	<el-row style="margin:10px 10px 0px 10px">
+	        <el-table id="12324"
+	                  :data="alarmPageData.data"
+	                  ref="entityTable"
+	                  border
+	                  max-height="456"
+	                  row-key="id"
+	                  empty-text="-"
+	                  append="加载中..."
+	                  :row-style="{'font-size':'13px'}"
+	                  style="width: 100%"
+	        >
+	            <el-table-column type="index" width="56"></el-table-column>
+	            
+	            <el-table-column
+	                    prop="alarmTime"
+	                    min-width="120"
+	                    v-bind:show-overflow-tooltip="true"
+	                    label="提醒时间"
+	                    align="center"
+	                    >
+	                    <template scope="scope">
+	                    	<span>{{monthMinuteFormat(scope.row.alarmTime)}}</span>
+	                	</template>
+	                </el-table-column>
+	                
+	            <el-table-column
+	                    prop="summary"
+	                    min-width="180"
+	                    v-bind:show-overflow-tooltip="true"
+	                    label="客户信息"
+	                    align="center"
+	                    >
+	                </el-table-column>
+	                
+	            <el-table-column
+	                    prop="content"
+	                    min-width="200"
+	                    v-bind:show-overflow-tooltip="true"
+	                    label="提醒内容"
+	                    align="center"
+	                    >
+	                </el-table-column>
+	            
+	            <el-table-column
+                    	label="操作"
+                    	width="100"
+	                    align="center"
+	                    >
+	                    <template scope="scope">
+		                    <el-button-group size="small">
+								<el-button size="small" type="danger"  @click="alarmDel(scope.row.id)">删除</el-button>
+							</el-button-group>
+						</template>
+	                </el-table-column>
+	                
+	        </el-table>
+	    </el-row>
+    </el-dialog>
+    
+<!---------------------------弹出资源详情窗口 开始----------------------------------------------------------------------->
+<el-dialog title="详情（请正确移动资源，合理备注，不要随意移动资源！！）" size="large" top="2%" :before-close="handleClose" :visible.sync="resourceVisible">
+    <el-row>
+    <el-col :span="16">
+    	<el-row>
+        <el-form ref="resourceDetailForm" :model="resourceEntity" label-position="left">
+            <el-row>
+        		<el-tag type="success">
+        			<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="resourceEntity.fromInfo"></lz-dic-txt>
+        		</el-tag>
+        		<el-tag type="primary">{{ demandFormat(resourceEntity.planCode) }}</el-tag>
+        	</el-row>
+        	<el-row>
+            	<el-tag type="danger">{{ demandFormat(resourceEntity.demand) }}</el-tag>
+        	</el-row>
+            <el-col :span="8">
+		    	<el-form-item label="姓名：" label-width="80px" prop="name">
+    				<el-input style="width:100px;" size="small" v-model="resourceEntity.name" placeholder="客户姓名" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+            	<el-form-item label="手机号：" label-width="80px" prop="fuzzyMobile">
+    				<span>{{resourceEntity.fuzzyMobile}}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="区域：">
+                	<span>{{ resourceEntity.province }} - {{ resourceEntity.city }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+            	<el-form-item label="职业：" label-width="80px" prop="duty">
+    				<el-input style="width:100px;" size="small" v-model="resourceEntity.duty" placeholder="职业" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+        		<el-form-item label="性别：" label-width="80px" prop="sex">
+    			<lz-dic-select style="width:100px;" v-model="resourceEntity.sex" dic-type="SEX"></lz-dic-select>
+        		</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+            	<el-form-item label="年龄：" label-width="80px" prop="age">
+    				<el-input type="number" style="width:100px;" size="small" v-model="resourceEntity.age" placeholder="年龄" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="总监：">
+                	<span>{{ resourceEntity.directorName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="经理：">
+                	<span>{{ resourceEntity.managerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="业务员：">
+                	<span>{{ resourceEntity.salerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="23">
+                <el-form-item label="市场部备注：">
+	                <el-input type="textarea" :rows="6" size="small" placeholder="市场部备注" v-model="resourceEntity.remark"></el-input>
+	            </el-form-item>
+        	</el-col>
+        </el-form>
+        </el-row>
+        </el-col>
+        <el-col :span="8">
+        	<el-card class="box-card">
+		    <el-row>
+        	<el-form ref="serverRecordMobileForm" :model="serverRecordMobileEntity1" >
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="success" :disabled="callDisable" @click="detailsCall">拨打电话</el-button>
+        		</el-col>
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="danger" >挂断电话</el-button>
+        		</el-col>
+		        <el-col :span="24">
+		        <el-form-item label="服务类型：" prop="type">
+		             <el-radio-group v-model="serverRecordMobileEntity1.type">
+				    	<el-radio label="0">未接通</el-radio>
+						<el-radio label="1">已接通</el-radio>
+		  			</el-radio-group>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话时长：" prop="timeLength">
+		             <span>{{ timerFormat(serverRecordMobileEntity1.timeLength) }}</span>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话内容：">
+		    		<el-input type="textarea" :rows="4" size="small" placeholder="请填写本次通话记录" v-model="serverRecordMobileEntity1.serverRecord"></el-input>
+		        </el-form-item>
+		        </el-col>
+        	</el-form>
+			</el-row>
+        	<el-row type="flex" class="row-bg" justify="center">
+				<el-button style="margin-top:12px" size="small" type="info" :disabled="showSaveButton"  @click="detailsSaveRecord">保存通话记录</el-button>
+	        </el-row>
+	        </el-card>
+        </el-col>
+        </el-row>
+        <el-row style="margin-top:10px">
+        <el-tabs v-model="activeName" type="border-card">
+    		<el-tab-pane label="通话记录" name="record2">
+    			<span slot="label" @click="flushSalerRecord">通话记录</span>
+				<el-table height="178" :data="salerRecordEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="50"></el-table-column>
+					<el-table-column prop="serverName" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="业务员" align="center"></el-table-column>
+					<el-table-column prop="type" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="是否接通" align="center">
+						<template scope="scope">
+							<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.type"></lz-dic-txt>
+						</template>
+					</el-table-column>
+					<el-table-column prop="serverRecord" min-width="320" v-bind:show-overflow-tooltip="true" 
+						label="通话内容" align="center"></el-table-column>
+					<el-table-column prop="callFile" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="录音文件" align="center" >
+							<template scope="scope">
+                    			<a :href="fptFormat(scope.row.callFile)">{{recordExist(scope.row.callFile)}}</a>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="timeLength" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="通话时长" align="center" >
+							<template scope="scope">
+                    			<span>{{timerFormat(scope.row.timeLength)}}</span>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="createTime" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+  		</el-tabs>
+  		</el-row>
+    </el-dialog>
+<!---------------------------弹出资源详情窗口 结束----------------------------------------------------------------------->
+<!---------------------------弹出会员详情窗口 开始----------------------------------------------------------------------->
+<el-dialog title="会员详情" size="large" top="3%" :visible.sync="customerVisible">
+    <el-row>
+    <el-col :span="16">
+    	<el-row>
+        <el-form ref="customerDetailForm" :model="resourceEntity" label-position="left">
+            <el-col :span="8">
+		    	<el-form-item label="姓名：" label-width="80px">
+    				<span>{{ resourceEntity.name }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+            	<el-form-item label="手机号：" label-width="80px">
+					<span>{{ resourceEntity.fuzzyMobile }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="区域：">
+                	<span>{{ resourceEntity.province }} - {{ resourceEntity.city }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+            	<el-form-item label="职业：" label-width="80px" prop="duty">
+    				<el-input style="width:100px;" size="small" v-model="resourceEntity.duty" placeholder="职业" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+        		<el-form-item label="性别：" label-width="80px" prop="sex">
+    			<lz-dic-select style="width:100px;" v-model="resourceEntity.sex" dic-type="SEX"></lz-dic-select>
+        		</el-form-item>
+        	</el-col>
+    		<el-col :span="8">
+            	<el-form-item label="年龄：" label-width="80px" prop="age">
+    				<el-input type="number" style="width:100px;" size="small" v-model="resourceEntity.age" placeholder="年龄" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="总监：">
+                	<span>{{ resourceEntity.directorName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="经理：">
+                	<span>{{ resourceEntity.managerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="业务员：">
+                	<span>{{ resourceEntity.salerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="23">
+                <el-form-item label="客服部备注：">
+	                <el-input type="textarea" :rows="6" size="small" placeholder="客服部备注" v-model="resourceEntity.serverRemark"></el-input>
+	            </el-form-item>
+        	</el-col>
+        </el-form>
+        </el-row>
+		<el-row type="flex" class="row-bg" justify="center">
+			<el-button style="margin-top:8px" size="large" type="info"  @click="updateCustomerSave">保 存 客 户 信 息</el-button>
+		</el-row>
+        </el-col>
+        <el-col :span="8">
+        	<el-card class="box-card">
+		    <el-row>
+        	<el-form ref="serverRecordMobileForm" :model="serverRecordMobileEntity1" >
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="success" :disabled="callDisable" @click="detailsCall">拨打电话</el-button>
+        		</el-col>
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="danger" @click="topdrop">挂断电话</el-button>
+        		</el-col>
+		        <el-col :span="24">
+		        <el-form-item label="服务类型：" prop="type">
+		             <el-radio-group v-model="serverRecordMobileEntity1.type">
+				    	<el-radio label="0">未接通</el-radio>
+						<el-radio label="1">已接通</el-radio>
+		  			</el-radio-group>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话时长：" prop="timeLength">
+		             <span>{{ timerFormat(serverRecordMobileEntity1.timeLength) }}</span>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话内容：">
+		    		<el-input type="textarea" :rows="5" size="small" placeholder="请填写本次通话记录" v-model="serverRecordMobileEntity1.serverRecord"></el-input>
+		        </el-form-item>
+		        </el-col>
+        	</el-form>
+	        </el-row>
+        	<el-row type="flex" class="row-bg" justify="center">
+				<el-button style="margin-top:12px" size="small" type="info" :disabled="showSaveButton"  @click="detailsSaveRecord">保存通话记录</el-button>
+			</el-row>
+	        </el-card>
+        </el-col>
+        </el-row>
+        <el-row style="margin-top:10px">
+        <el-tabs v-model="activeName" type="border-card">
+    		<el-tab-pane label="订单记录" name="apply1">
+				<el-table height="178" :data="applyEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="40" align="center"></el-table-column>
+					<el-table-column prop="createTime" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="签单时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{birthdayFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+					<el-table-column prop="insuranceId" min-width="120" v-bind:show-overflow-tooltip="true" 
+						label="产品名称" align="center">
+							<template scope="scope">
+								<lz-dic-txt dic-type="ALLPRODUCT" :dic-code="scope.row.insuranceId"></lz-dic-txt>
+							</template>
+						</el-table-column>
+					<el-table-column prop="amount" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="缴费金额" align="center">
+						<template scope="scope">
+                    		<span>{{rmbFormat(scope.row.amount)}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="belong" min-width="120" v-bind:show-overflow-tooltip="true" 
+						label="市场部归属" align="center"></el-table-column>
+					<el-table-column prop="startDate" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="服务开始日期" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{birthdayFormat(scope.row.startDate)}}</span>
+                			</template>
+					</el-table-column>
+					<el-table-column prop="endDate" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="服务结束日期" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{birthdayFormat(scope.row.endDate)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+			<el-tab-pane label="市场通话记录" name="record1">
+    			<span slot="label" @click="flushSalerRecord">市场通话记录</span>
+				<el-table height="178" :data="salerRecordEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="50"></el-table-column>
+					<el-table-column prop="serverName" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="业务员" align="center"></el-table-column>
+					<el-table-column prop="type" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="是否接通" align="center">
+						<template scope="scope">
+							<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.type"></lz-dic-txt>
+						</template>
+					</el-table-column>
+					<el-table-column prop="serverRecord" min-width="320" v-bind:show-overflow-tooltip="true" 
+						label="通话内容" align="center"></el-table-column>
+					<el-table-column prop="callFile" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="录音文件" align="center" >
+							<template scope="scope">
+                    			<a :href="fptFormat(scope.row.callFile)">{{recordExist(scope.row.callFile)}}</a>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="timeLength" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="通话时长" align="center" >
+							<template scope="scope">
+                    			<span>{{timerFormat(scope.row.timeLength)}}</span>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="createTime" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+			<el-tab-pane label="客服通话记录" name="record2">
+    			<span slot="label" @click="flushServerRecord">客服通话记录</span>
+				<el-table height="178" :data="serverRecordMobileEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="50"></el-table-column>
+					<el-table-column prop="serverName" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="客服" align="center"></el-table-column>
+					<el-table-column prop="type" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="是否接通" align="center">
+						<template scope="scope">
+							<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.type"></lz-dic-txt>
+						</template>
+					</el-table-column>
+					<el-table-column prop="serverRecordMobile" min-width="320" v-bind:show-overflow-tooltip="true" 
+						label="通话内容" align="center"></el-table-column>
+					<el-table-column prop="callFile" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="录音文件" align="center" >
+							<template scope="scope">
+                    			<a :href="fptFormat(scope.row.callFile)">{{recordExist(scope.row.callFile)}}</a>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="timeLength" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="通话时长" align="center" >
+							<template scope="scope">
+                    			<span>{{timerFormat(scope.row.timeLength)}}</span>
+                			</template>
+					</el-table-column>
+					<el-table-column prop="createTime" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+    		<el-tab-pane label="退款记录" name="refund1">
+				<el-table height="178" :data="refundEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="50"></el-table-column>
+					<el-table-column prop="refundMoney" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="金额"></el-table-column>
+					<el-table-column prop="remark" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="备注"></el-table-column>
+					<el-table-column prop="dealerStatus" min-width="50" v-bind:show-overflow-tooltip="true"
+                    	label="状态">
+						<template scope="scope">
+							<lz-dic-txt dic-type="STATUS" :dic-code="scope.row.dealerStatus"></lz-dic-txt>
+						</template>
+					</el-table-column>
+					<el-table-column prop="createTime" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="时间" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+  		</el-tabs>
+  		</el-row>
+    </el-dialog>
+<!---------------------------弹出会员详情窗口 结束----------------------------------------------------------------------->
+<!---------------------------弹出未知来电详情窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="未知来电" size="tiny" top="3%" :visible.sync="otherVisible">
+		<el-row>
+        	<el-form ref="serverRecordMobileForm" :model="serverRecordMobileEntity1" >
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="success" :disabled="callDisable" @click="detailsCall">拨打电话</el-button>
+        		</el-col>
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="danger" @click="topdrop">挂断电话</el-button>
+        		</el-col>
+		        <el-col :span="24">
+		        <el-form-item label="服务类型：" prop="type">
+		             <el-radio-group v-model="serverRecordMobileEntity1.type">
+				    	<el-radio label="0">未接通</el-radio>
+						<el-radio label="1">已接通</el-radio>
+		  			</el-radio-group>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话时长：" prop="timeLength">
+		             <span>{{ timerFormat(serverRecordMobileEntity1.timeLength) }}</span>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话内容：">
+		    		<el-input type="textarea" :rows="6" size="small" placeholder="请填写本次通话记录" v-model="serverRecordMobileEntity1.serverRecord"></el-input>
+		        </el-form-item>
+		        </el-col>
+        	</el-form>
+		</el-row>
+        	<el-row type="flex" class="row-bg" justify="center">
+				<el-button style="margin-top:12px" size="small" type="info" :disabled="showSaveButton"  @click="detailsSaveRecord">保存通话记录</el-button>
+			</el-row>
+    </el-dialog>
+<!---------------------------弹出未知来电窗口 结束----------------------------------------------------------------------->
+</div>
+<input type="hidden" id="status" name="status" />
+<input type="hidden" id="callFile" name="callFile" />
+<input type="hidden" id="phoneNum" name="phoneNum" />
+</body>
+<script type="text/javascript">
+
+//State = 0,//连接状态 (0:未初始化,1:已初始化(未连接),3:连接中,5:已连接,10:已登录,15:分机登陆)
+function G (id,val) {
+		var obj = document.getElementById(id);
+		obj.value = val;
+	};
+
+var pbx=PbxTransfer;
+
+//初始化连接
+function init(agentNo){
+	if (null != agentNo && agentNo != "") {
+		pbx.Connect('172.16.0.7:2051');
+	}
+}
+//登录
+function login(){
+	var user = JSON.parse(sessionStorage.getItem("user"));
+	if (null != user.agentNo && user.agentNo != "") {
+		pbx.Login(parseInt(user.agentNo),user.id == ""?"无用户ID":user.id,"",String(user.userName));
+		//pbx.Login(8061,"","","测试用户");
+	}
+}
+//连接
+function OnConnect(b){
+    if (b) {
+    	console.log("已连接");
+    } else {
+    	console.log("未连接");
+    }
+}
+//webscoket连接状态
+function OnClose(){
+    alert("通讯故障，请联系管理员");
+}
+
+function OnLoginOK(v1,v2){
+	//清空号码
+    G("phoneNum","");
+	alert("坐席登录成功");
+}
+function OnLoginError(err,agid,agname,ip){
+    alert("坐席登录失败！请退出系统重新登录。");
+}
+function OnInBound(phonenum,ext,ivr,agentNo){
+    console.log("电话呼入...", "对方电话号码:" + phonenum + "，ext:" + ext + "，ivr：" + ivr + "，分机号：" + agentNo);
+    //来电
+    G("phoneNum",phonenum);
+}
+//摘机
+function OnAnswered(direct,file,dt){
+    //发送通知到子页面
+    sendPhoneStatus2Iframe({
+        "event":"OnAnswered",
+        "direct":direct,
+        "file":file,
+        "dt":dt
+    });
+    console.log("收到摘机状态通知");
+    if (direct == "out") {
+		console.log("对方应答...","  录音:" + file + ",时间：" + dt );
+	} else {
+		console.log("我方应答...","  录音:" + file + ",时间：" + dt );
+	}
+    G("callFile",file);
+	//通话开始
+	G("status","1");
+}
+//挂机
+function OnHangUp(direct,sta,dt){
+    //发送通知到子页面
+    sendPhoneStatus2Iframe({
+        "event":"OnHangUp",
+        "direct":direct,
+        "sta":sta,
+        "dt":dt
+    });
+    console.log("收到挂机状态通知");
+    if (direct == "out") {
+		console.log("对方挂机...","  就绪:" + (sta == "1" ? "空闲" : "置忙") + "时间：" + dt );
+	} else {
+		console.log("我方挂机...","  就绪:" + (sta == "1" ? "空闲" : "置忙") + "时间：" + dt );
+	}
+	//通话结束
+	G("status","2");
+    //清空号码
+    G("phoneNum","");
+}
+//错误
+function OnError(err){
+}
+
+/**
+ * 向iframe发送电话状态
+ * @param data
+ */
+var sendPhoneStatus2Iframe = function(data){
+	console.log("iframe向所有子页面发送通知");
+    //获取所有子页面
+    var iframes=document.getElementsByTagName("iframe");
+    if (iframes && typeof(iframes) != "undefined" && iframes != 0 && iframes.length > 0) {
+	    for(var i=0;i<iframes.length;i++){
+	        //如果子页面中有接收电话状态的方法,那么就发送通知
+	        if (typeof(iframes[i].contentWindow.notifyPhoneStatus) != "undefined"){
+	            iframes[i].contentWindow.notifyPhoneStatus(data);
+	        }
+	    }
+    }
+
+}
+//拨打电话
+function dial(phone){
+	var user = JSON.parse(sessionStorage.getItem("user"));
+	if (user.agentNo && typeof(user.agentNo) != "undefined" && user.agentNo != "" && user.agentNo > 0) {
+		pbx.MakeCall(phone);
+	} else {
+		alert("无分机号，不可拨打电话");
+	}
+}
+//挂断电话
+function drop(phone){
+	pbx.HangUp();
+}
+
+
+//默认加载
+/* window.onload=function(){
+	console.log("window.onload");
+	//先判断是否有分机号
+	var user = JSON.parse(sessionStorage.getItem("user"));
+	if (user && typeof(user) != "undefined" && user != 0 && user.agentNo > 0) {
+		//连接pbx
+		init(user.agentNo);
+		//延时登录
+		setTimeout( () => {
+			login();
+		},1000);
+	}
+} */
+$(function () {
+	//先判断是否有分机号
+	var user = JSON.parse(sessionStorage.getItem("user"));
+	if (user && typeof(user) != "undefined" && user != 0 && user.agentNo > 0) {
+		//连接pbx
+		init(user.agentNo);
+		//延时登录
+		setTimeout( () => {
+			login();
+		},1000);
+	}
+});
+</script>
+<script>
+    var vuePage = new Vue({
+        el: '#app',
+        data:{
+        	con : {},
+        	loginUrl : "/s/login.html",
+        	reckon : 30,
+        	redisVisible : false,
+        	restartVisible : false,
+            meuns:[],
+            user:{},
+            menuSpan:4,
+            mainSpan:20,
+            showMessageVisible : false,
+            messagePageData : {},
+            messageNum : "",
+            searchMessageParams : {userId:'',userName:'',type:'',content:'',createBy:'',createByName:'',createTime:'',isRead:''},
+            messageEntity : {userId:'',userName:'',type:'',content:'',createBy:'',createByName:'',createTime:'',isRead:''},
+            
+            alarmVisible : false,
+            alarmPageData : {},
+            
+            //
+            resourceVisible: false,
+            customerVisible: false,
+            otherVisible: false,
+            resourceEntity : {},
+            //市场部服务记录实体（详情）
+            salerRecordEntity: {customerId:'',customerName:'',customerMobile:'',serverRecord:'',timeLength:'',callFile:'',serverId:'',serverName:'',serverMobile:'',type:'',remark:'',createTime:''},
+            //客服部服务记录实体（详情）
+            serverRecordMobileEntity: {customerId:'',customerName:'',customerMobile:'',serverRecord:'',timeLength:'',callFile:'',serverId:'',serverName:'',serverMobile:'',type:'',remark:'',createTime:''},
+            //客服通话记录实体
+            serverRecordMobileEntity1: {id:'',customerId:'',customerName:'',customerMobile:'',serverRecord:'',timeLength:'',callFile:'',serverId:'',serverName:'',serverMobile:'',type:'',},
+          	//签单实体（详情）
+            applyEntity: {customerId:'',customerName:'',wechatNo:'',fuzzyMobile:'',policyNo:'',fromInfo:'',belong:'',insuranceId:'',insuranceName:'',isLongTerm:'',amount:'',amountTerm:'',introducerId:'',salerName:'',managerName:'',directorName:'',ministerName:'',isNewResource:'',isNewClub:'0',policyholderName:'',policyholderIdentifyNumber:'',policyholderAge:'',policyholderSex:'',policyholderRegion:'',policyholderProvince:'',policyholderCity:'',policyholderProfession:'',relation:'',insurederName:'',insurederIdentifyNumber:'',insurederAge:'',insurederSex:'',companyId:'',companyName:'',upgraderId:'',upgradeManagerId:'',upgradeDirectorId:'',upgraderName:'',upgradeManagerName:'',upgradeDirectorName:'',isUpgrade:'',upgradeNum:'',type:'2',isFirst:'0',submitCode:'',insuranceLimit:''},
+            //客服服务记录实体（详情）
+            //退款实体（详情）
+            refundEntity: {customerId:'',customerName:'',refundMoney:'',dealerId:'',dealerName:'',dealerStatus:'',dealerResult:'',remark:'',createTime:''},
+            
+            activeName: 'record2',
+            //
+            callInPhoneNum : "",
+            topdial : top.window.dial,
+            topdrop : top.window.drop,
+            showSaveButton : true,
+            callDisable: false,
+            isFirstSaveRecord: false,
+            
+        },
+        created: function () {
+            var self = this;
+            //菜单、用户、字典
+            self.readPromission();
+        },
+        methods:{
+            readPromission:function(){
+                var self = this;
+                self.$http.put('/sys/user/read/promission')
+                        .then(function (response) {
+                            self.meuns = response.data.menus;
+                            self.user = response.data.user;
+                          //全局变量【web存储】
+                           sessionStorage.setItem("user", JSON.stringify(response.data.user));
+                           self.queryPhoneNum(self.user.userGroup);
+                        });
+                
+                self.$http.get('sys/dic/read/all')
+				.then(function (response) {
+					if (null != response.data.data) {
+						//全局变量【web存储】
+                        sessionStorage.setItem("dic", JSON.stringify(response.data.data));
+					}
+				});
+            },
+            menuClick:function(url){
+                document.getElementById("contentFrame").src = url;
+            },
+            hideMenu:function(){
+                this.menuSpan=0;
+                this.mainSpan=24;
+            },
+            showMenu:function(){
+                this.menuSpan=4;
+                this.mainSpan=20;
+            },
+        	//返回默认页
+        	restoreDefault:function(){
+                document.getElementById("contentFrame").src = "/s/default.html";
+            },
+          	//系统退出（返回登录页）
+        	logout:function(){
+                var self = this;
+                self.$confirm('您确定是要退出系统吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    self.$http.get('sys/logout')
+                            .then(function (response) {
+                                window.location.href = '/s/login.html';
+                            });
+                }).catch(function () {
+                });
+            },
+            alarmList : function () {
+            	var self = this;
+            	var user = JSON.parse(sessionStorage.getItem("user"));
+            	var userId = "";
+            	if (user && user != undefined && user != "") {
+            		userId = user.id;
+				}
+            	if (userId && userId != undefined && userId != "") {
+            		self.$http.put("crm/alarm/read/queryList", {"userId":userId})
+    	            .then(function (response) {
+    	                self.alarmPageData = response.data;
+    	                self.alarmVisible = true;
+    	            });
+				}
+            },
+            alarmDel : function (alarmEntityId) {
+				var self = this;
+				self.$http.delete("crm/alarm", {body: {"ids":alarmEntityId}})
+                .then(function (response) {
+    				self.alarmList();
+                });
+			},
+			//资源详情
+			showResourceDetails : function (customerId) {
+            	var self = this;
+                self.$http.put('crm/resource/read/details', {id: customerId})
+                        .then(function (response) {
+                        	var result = response.data.data;
+                        	self.resourceEntity = result.resource;
+                        	self.resourceEntity.lastCallTime = '';
+                        	self.salerRecordEntity = result.salerRecord;
+                        	self.resourceVisible = true;
+                        });
+            },
+            //会员详情
+            showCustomerDetails : function (customerId) {
+            	var self = this;
+            	self.$http.put('crm/customer/read/serverDetails', {id: customerId})
+                .then(function (response) {
+                	var result = response.data.data;
+                	self.resourceEntity = result.customer;
+                	self.applyEntity = result.apply;
+                	self.salerRecordEntity = result.salerRecord;
+                	self.serverRecordMobileEntity = result.serverRecordMobile;
+                	self.refundEntity = result.refund;
+                    self.customerVisible = true;
+                });
+            },
+            //未知来电详情
+            showOtherDetails : function (phoneNum) {
+            	var self = this;
+            	self.resourceEntity.mobile = phoneNum;            	
+            	self.otherVisible = true;
+            },
+			//修改资源保存
+            updateResourceSave : function () {
+            	var self = this;
+            	self.$http.post('crm/resource', self.resourceEntity)
+    			.then(function (response) {
+    				var result = response.data.data;
+    				self.resourceEntity = result;//所有保存，添加此行，以避免重复提交
+    			});
+            },
+            //修改会员保存
+            updateCustomerSave : function () {
+            	var self = this;
+            	self.resourceEntity.submitCode = '';
+        		self.resourceEntity.upgradeSubmitCode = '';
+        		self.resourceEntity.qq = '';
+        		self.resourceEntity.phone = '';
+        		self.resourceEntity.wechatNo = '';
+        		self.resourceEntity.mobile = '';
+        		
+        		self.$http.post('crm/customer', self.resourceEntity)
+    			.then(function (response) {
+    				var result = response.data.data;
+    				self.resourceEntity = result;//所有保存，添加此行，以避免重复提交
+    			});
+            },
+            startTimer : function () {
+            	var self = this;
+            	var timer = setTimeout( () => {
+            		var status = document.getElementById("status").value;
+            		//是否循环
+            		if (status == "2") {
+            			if (self.isFirstSaveRecord == true) {
+            				//自动保存通话记录（挂机后）
+            				//self.firstSaveRecord();
+            				clearTimeout(timer);
+            				console.log("停止计时");
+            				console.log("通话状态：挂机");
+            			}
+					} else {
+						if (status == "1") {
+	            			self.serverRecordMobileEntity1.timeLength = parseInt(self.serverRecordMobileEntity1.timeLength) + parseInt(1);
+	            			//修改状态为已接通
+	            			self.serverRecordMobileEntity1.type = "1";
+	            			//
+	            			var callFile = document.getElementById("callFile").value;
+	            			if (self.isFirstSaveRecord == false && callFile && callFile.length > 5) {
+	            				//自动保存通话记录（接通后）
+	            				//self.firstSaveRecord();
+	            				self.isFirstSaveRecord = true;
+							}
+	            			console.log("通话状态：接通");
+	            		} else {
+	            			console.log("通话状态：... ...");
+	            		}
+						//循环
+						self.startTimer();
+					}
+	        	},1000);
+            },
+          //详情页内拨打电话
+            detailsCall : function () {
+            	var self = this;
+            	//锁定拨打按钮
+		    	self.callDisable = true;
+		    	self.serverRecordMobileEntity1 = {id:'',customerId:'',customerName:'',customerMobile:'',serverRecord:'',timeLength:'',callFile:'',serverId:'',serverName:'',serverMobile:'',type:''};
+            	if (self.resourceEntity.mobile && typeof(self.resourceEntity.mobile) != "undefined" && self.resourceEntity.mobile.length == 11) {
+            		var user = JSON.parse(sessionStorage.getItem("user"));
+                	if (user.agentNo && typeof(user.agentNo) != "undefined" && user.agentNo != "" && user.agentNo > 0) {
+                		if (self.resourceEntity.province.indexOf("武汉") >= 0 || self.resourceEntity.city.indexOf("武汉") >= 0) {
+                			//开始拨号
+                			self.topdial(self.resourceEntity.mobile);
+    					} else {
+    						//加“0”拨号
+                			self.topdial("0" + self.resourceEntity.mobile);
+    					}
+    			    	//客户信息
+    			    	self.serverRecordMobileEntity1.customerId = self.resourceEntity.id;
+    			    	self.serverRecordMobileEntity1.customerName = self.resourceEntity.name;
+    			    	self.serverRecordMobileEntity1.customerMobile = self.resourceEntity.mobile;
+    			    	
+    			    	document.getElementById("status").value = "";
+    			    	document.getElementById("callFile").value = "";
+    			    	//开始记录通话时长
+    			    	self.serverRecordMobileEntity1.timeLength = 0;
+    			    	//初始化通话状态为：未接通
+    					self.serverRecordMobileEntity1.type = "0";
+    			    	//激活保存按钮
+    			    	self.showSaveButton = false;
+    			    	//
+    			    	self.isFirstSaveRecord = false;
+    			    	self.startTimer();
+                	} else {
+                		//激活拨打按钮
+        		    	self.callDisable = false;
+                		self.$message.error('无分机号，不可拨打电话、不可保存通话记录');
+                	}
+				} else {
+					//激活拨打按钮
+    		    	self.callDisable = false;
+					self.$message.error('无手机号码，或手机号码不是11位');
+				}
+            },
+            //详情页保存电话服务记录
+            detailsSaveRecord : function () {
+            	var self = this;
+            	var callFile = document.getElementById("callFile").value;
+            	self.serverRecordMobileEntity1.callFile = callFile;
+            	console.log("录音文件："+self.serverRecordMobileEntity1.callFile);
+            	self.serverRecordMobileEntity1.customerId = self.resourceEntity.id;
+            	self.serverRecordMobileEntity1.customerName = self.resourceEntity.name;
+            	self.serverRecordMobileEntity1.customerMobile = self.resourceEntity.mobile;
+				if (self.serverRecordMobileEntity1.serverRecord && typeof(self.serverRecordMobileEntity1.serverRecord) != "undefined" && self.serverRecordMobileEntity1.serverRecord != '') {//服务内容
+					self.$http.post("crm/serverRecordMobile", self.serverRecordMobileEntity1)
+					.then(function (response) {
+						self.showSaveButton = true;
+						self.flushServerRecord();
+						//激活拨打按钮
+						self.callDisable = false;
+						document.getElementById("phoneNum").value = "";
+						//重新开始等待来电
+                        self.queryPhoneNum(self.user.userGroup);
+					});
+				} else {
+					self.$message({
+						message: '请认真填写每一次通话内容',
+						type: 'warning'
+					});
+					return false;
+				}
+            },
+            //关闭详情窗事件
+            handleClose : function () {
+            	var self = this;
+            	if (!self.showSaveButton) {
+            		/*self.$notify.error({
+            				message: '请先保存通话记录',
+            	        	offset: 100
+            	        });*/
+            		self.$message.error('请先保存通话记录');
+            	} else {
+            		self.resourceVisible = false;
+            	}
+            },
+          //刷新市场通话记录
+            flushSalerRecord: function () {
+            	var self = this;
+                this.$http.put('crm/salerRecord/read/list/customer', {customerId: self.resourceEntity.id})
+                .then(function (response) {
+                	self.salerRecordEntity = response.data.data;
+                });
+            },
+          //刷新客服通话记录
+            flushServerRecord: function () {
+            	var self = this;
+                this.$http.put('crm/serverRecordMobile/read/list/customer', {customerId: self.resourceEntity.id})
+                .then(function (response) {
+                	self.serverRecordMobileEntity = response.data.data;
+                });
+            },
+            //客户需求格式化
+            demandFormat: function(v,p) {
+				if(v == null || v == '' || typeof(v) == "undefined" || v <= 0) {
+					return "";
+				} else {
+					var val = "";
+					try {
+						if (v.indexOf("key") >= 0 && v.indexOf("value") >= 0) {
+							var obj = eval("(" + v + ")");
+							for(var i in obj) {
+								val += obj[i].key + "：" + obj[i].value + "；";
+							}
+							if (p == null || p == '' || typeof(p) == "undefined" || p <= 0) {
+								return val;
+							} else {
+								return p + "，" +val;
+							}
+						}
+					} catch (e) {
+						console.log(v+"解析json异常");
+					}
+					return v;
+				}
+			},
+			//监听来电
+			queryPhoneNum : function (userGroup) {
+				console.log(userGroup==null?"":userGroup + "开始监听来电");
+				var self = this;
+            	if (userGroup != null && (userGroup == 88002008 || userGroup == 88002006 || userGroup == 88002007)) {
+					var timer2 = setTimeout( () => {
+						self.callInPhoneNum = document.getElementById("phoneNum").value;
+						if (self.callInPhoneNum == null || self.callInPhoneNum == '' || typeof(self.callInPhoneNum) == "undefined" || self.callInPhoneNum <= 0) {
+							//循环
+							console.log("来电状态：等待中...");
+							self.queryPhoneNum(userGroup);
+						} else {
+							self.callIn(self.callInPhoneNum);
+							document.getElementById("status").value = "";
+	    			    	document.getElementById("callFile").value = "";
+	    			    	//开始记录通话时长
+	    			    	self.serverRecordMobileEntity1.timeLength = 0;
+	    			    	//初始化通话状态为：未接通
+	    					self.serverRecordMobileEntity1.type = "0";
+	    			    	//激活保存按钮
+	    			    	self.showSaveButton = false;
+	    			    	self.isFirstSaveRecord = false;
+							self.startTimer();
+							//结束循环
+							console.log("来电状态：" + self.callInPhoneNum);
+							clearTimeout(timer2);
+						}
+					},1000);
+            	}
+			},
+			//来电
+			callIn : function (phoneNum) {
+				var self = this;
+				//清空来电实体
+				self.serverRecordMobileEntity1 = {id:'',customerId:'',customerName:'',customerMobile:'',serverRecord:'',timeLength:'',callFile:'',serverId:'',serverName:'',serverMobile:'',type:''};
+				//查询是资源还是成交客户，或未知电话
+				self.$http.put("crm/customer/queryCallInPhone", {"phoneNum":phoneNum})
+                .then(function (response) {
+                	var result = response.data.data;
+                	if (result.type == "1") {
+						//成交客户
+						self.showCustomerDetails(result.customerId);
+					} else if (result.type == "2") {
+						//资源
+						console.log(result);
+						self.showResourceDetails(result.resourceId);
+					} else {
+						//未知电话
+						self.showOtherDetails(phoneNum);
+					}
+                });
+				//激活保存按钮
+		    	self.showSaveButton = false;
+			},
+        }
+    });
+
+</script>
+<script type="text/javascript">
+	window.onload = function(){
+		setTimeout(function(){
+			$(":contains('即将到期客户')").css("color", "#F9C855");
+		},1000);
+	}
+</script>
+</html>

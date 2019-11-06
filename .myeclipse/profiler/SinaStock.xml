@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="app_preset_prof_preset_name">SinaStock Launch Configuration</entry>
+<entry key="app_preset_prof_preset_filter_s"/>
+<entry key="app_preset_prof_preset_filter_p">com.lazhu.ad.channelcost.entity.*,
+com.lazhu.ad.channelcost.mapper.*,
+com.lazhu.ad.channelcost.service.*,
+com.lazhu.ad.channelcost.web.*,
+com.lazhu.ad.cost.entity.*,
+com.lazhu.ad.cost.mapper.*,
+com.lazhu.ad.cost.service.*,
+com.lazhu.ad.cost.web.*,
+com.lazhu.aladdinpbx.agentevent.entity.*,
+com.lazhu.aladdinpbx.agentevent.mapper.*,
+com.lazhu.aladdinpbx.agentevent.service.*,
+com.lazhu.aladdinpbx.agentevent.web.*,
+com.lazhu.aladdinpbx.noanswercall.entity.*,
+com.lazhu.aladdinpbx.noanswercall.mapper.*,
+com.lazhu.aladdinpbx.noanswercall.service.*,
+com.lazhu.aladdinpbx.noanswercall.web.*,
+com.lazhu.aladdinpbx.recordlogs.entity.*,
+com.lazhu.aladdinpbx.recordlogs.mapper.*,
+com.lazhu.aladdinpbx.recordlogs.service.*,
+com.lazhu.aladdinpbx.recordlogs.web.*,
+com.lazhu.business.excel.service.*,
+com.lazhu.business.excel.util.*,
+com.lazhu.business.excel.web.*,
+com.lazhu.core.*,
+com.lazhu.crm.*,
+com.lazhu.ecp.utils.*,
+com.lazhu.httpApi.*,
+com.lazhu.product.insuranceproduct.entity.*,
+com.lazhu.product.insuranceproduct.mapper.*,
+com.lazhu.product.insuranceproduct.service.*,
+com.lazhu.product.insuranceproduct.web.*,
+com.lazhu.resource.test.entity.*,
+com.lazhu.resource.test.mapper.*,
+com.lazhu.resource.test.service.*,
+com.lazhu.resource.test.web.*,
+com.lazhu.sys.mapper.*,
+com.lazhu.sys.model.*,
+com.lazhu.sys.service.*,
+com.lazhu.sys.web.*,
+com.lazhu.t.allotplanning.entity.*,
+com.lazhu.t.allotplanning.mapper.*,
+com.lazhu.t.allotplanning.service.*,
+com.lazhu.t.allotplanning.web.*,
+com.lazhu.t.mobileexport.entity.*,
+com.lazhu.t.mobileexport.mapper.*,
+com.lazhu.t.mobileexport.service.*,
+com.lazhu.t.mobileexport.web.*,
+com.lazhu.t.resource.entity.*,
+com.lazhu.t.resource.mapper.*,
+com.lazhu.t.resource.service.*,
+com.lazhu.t.resource.web.*,
+com.lazhu.t.resourceallot.entity.*,
+com.lazhu.t.resourceallot.mapper.*,
+com.lazhu.t.resourceallot.service.*,
+com.lazhu.t.resourceallot.web.*,
+com.lazhu.t.resourcreport.entity.*,
+com.lazhu.t.resourcreport.mapper.*,
+com.lazhu.t.resourcreport.service.*,
+com.lazhu.t.resourcreport.web.*,
+com.lazhu.task.runnable.*,
+com.lazhu.task.scheduler.*</entry>
+<entry key="app_preset_prof_preset_alloc_p">10</entry>
+<entry key="app_preset_"/>
+<entry key="app_preset_prof_preset_samplingRefreshRate_s">1000</entry>
+<entry key="app_preset_prof_preset_stacks_p">false</entry>
+<entry key="app_preset_prof_preset_roots_p">com.lazhu.ad.channelcost.entity.**
+com.lazhu.ad.channelcost.mapper.**
+com.lazhu.ad.channelcost.service.**
+com.lazhu.ad.channelcost.web.**
+com.lazhu.ad.cost.entity.**
+com.lazhu.ad.cost.mapper.**
+com.lazhu.ad.cost.service.**
+com.lazhu.ad.cost.web.**
+com.lazhu.aladdinpbx.agentevent.entity.**
+com.lazhu.aladdinpbx.agentevent.mapper.**
+com.lazhu.aladdinpbx.agentevent.service.**
+com.lazhu.aladdinpbx.agentevent.web.**
+com.lazhu.aladdinpbx.noanswercall.entity.**
+com.lazhu.aladdinpbx.noanswercall.mapper.**
+com.lazhu.aladdinpbx.noanswercall.service.**
+com.lazhu.aladdinpbx.noanswercall.web.**
+com.lazhu.aladdinpbx.recordlogs.entity.**
+com.lazhu.aladdinpbx.recordlogs.mapper.**
+com.lazhu.aladdinpbx.recordlogs.service.**
+com.lazhu.aladdinpbx.recordlogs.web.**
+com.lazhu.business.excel.service.**
+com.lazhu.business.excel.util.**
+com.lazhu.business.excel.web.**
+com.lazhu.core.**
+com.lazhu.crm.**
+com.lazhu.ecp.utils.**
+com.lazhu.httpApi.**
+com.lazhu.product.insuranceproduct.entity.**
+com.lazhu.product.insuranceproduct.mapper.**
+com.lazhu.product.insuranceproduct.service.**
+com.lazhu.product.insuranceproduct.web.**
+com.lazhu.resource.test.entity.**
+com.lazhu.resource.test.mapper.**
+com.lazhu.resource.test.service.**
+com.lazhu.resource.test.web.**
+com.lazhu.sys.mapper.**
+com.lazhu.sys.model.**
+com.lazhu.sys.service.**
+com.lazhu.sys.web.**
+com.lazhu.t.allotplanning.entity.**
+com.lazhu.t.allotplanning.mapper.**
+com.lazhu.t.allotplanning.service.**
+com.lazhu.t.allotplanning.web.**
+com.lazhu.t.mobileexport.entity.**
+com.lazhu.t.mobileexport.mapper.**
+com.lazhu.t.mobileexport.service.**
+com.lazhu.t.mobileexport.web.**
+com.lazhu.t.resource.entity.**
+com.lazhu.t.resource.mapper.**
+com.lazhu.t.resource.service.**
+com.lazhu.t.resource.web.**
+com.lazhu.t.resourceallot.entity.**
+com.lazhu.t.resourceallot.mapper.**
+com.lazhu.t.resourceallot.service.**
+com.lazhu.t.resourceallot.web.**
+com.lazhu.t.resourcreport.entity.**
+com.lazhu.t.resourcreport.mapper.**
+com.lazhu.t.resourcreport.service.**
+com.lazhu.t.resourcreport.web.**
+com.lazhu.task.runnable.**
+com.lazhu.task.scheduler.**
+</entry>
+<entry key="profiler.settings.instrument.empty.methods">false</entry>
+<entry key="myeclipse.profiling.mode">0</entry>
+<entry key="profiler.settings.istrument.getter.setter.methods">false</entry>
+<entry key="app_preset_prof_preset_samplingRate_s">100</entry>
+<entry key="app_preset_prof_preset_filterMode_s">true</entry>
+<entry key="app_preset_prof_preset_selector"/>
+<entry key="app_preset_prof_preset_refreshRate_s">1000</entry>
+<entry key="app_preset_prof_preset_runnables_p">true</entry>
+<entry key="app_preset_prof_preset_filterMode_p">false</entry>
+<entry key="app_preset_prof_preset_memoryMode_p">true</entry>
+</properties>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.worktrailabnormal.mapper.WorkTrailAbnormalMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_work_trail_abnormal
+		<where>
+			<!-- 业务员级联查询 -->
+			<if test="cm.cascaderId != null">
+			and 
+			<foreach item="item" index="index" collection="cm.cascaderId" separator="and">
+				<if test="index == 0">
+				 minister_id = #{item}
+				</if>
+				<if test="index == 1">
+				 director_id = #{item}
+				</if>
+				<if test="index == 2">
+				 manager_id = #{item}
+				</if>
+				<if test="index == 3">
+				 saler_id = #{item}
+				</if>
+          	</foreach>
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and t.create_time &gt;= #{cm.startTime}
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and t.create_time &lt;= #{cm.endTime}
+			</if>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.salerRecordId != null and cm.salerRecordId != ''">
+				and saler_record_id = #{cm.salerRecordId}
+			</if>
+			<if test="cm.beforeFlowId != null and cm.beforeFlowId != ''">
+				and before_flow_id = #{cm.beforeFlowId}
+			</if>
+			<if test="cm.afterFlowId != null and cm.afterFlowId != ''">
+				and after_flow_id = #{cm.afterFlowId}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 统计查询 -->
+	<select id="queryDetail" resultType="java.util.Map">
+		select t.*, r.`name` customerName, r.remark_ customerRemark, u.user_name userName 
+		from crm_work_trail_abnormal t, crm_resource r, sys_user u
+		<where>
+			t.customer_id = r.id and t.saler_id = u.id and u.enable_ = 1 and u.locked_ = 0
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and t.saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and t.manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and t.director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and t.minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and t.create_time &gt;= #{cm.startTime}
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and t.create_time &lt;= #{cm.endTime}
+			</if>
+			<if test="cm.beforeFlowId != null and cm.beforeFlowId != ''">
+				and before_flow_id = #{cm.beforeFlowId}
+			</if>
+			<if test="cm.afterFlowId != null and cm.afterFlowId != ''">
+				and after_flow_id = #{cm.afterFlowId}
+			</if>
+		</where>
+	</select>
+</mapper>

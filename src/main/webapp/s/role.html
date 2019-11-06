@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>角色信息表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <style type="text/css">
+	  .el-table .info-row .el-table_1_column_3{
+	    background: #50BFFF;
+	  }
+	</style>
+</head>
+<body>
+<div id="app">
+    <hr style="margin-top:40px;"/>
+    <!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <!--<el-collapse accordion>-->
+        <!--<el-collapse-item title="查询面板[点击展开]">-->
+            <!--<el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px">-->
+                <!--<el-form-item label="角色名称" style="font-size: 13px;" prop="roleName">-->
+                    <!--<el-input size="small" v-model="searchParams.roleName" placeholder="角色名称"></el-input>-->
+                <!--</el-form-item>-->
+                <!--<el-form-item label="角色类型" style="font-size: 13px;" prop="roleType">-->
+                    <!--<lz-dic-select dic-type="ROLETYPE" v-model="searchParams.roleType"></lz-dic-select>-->
+                <!--</el-form-item>-->
+                <!--<el-form-item>-->
+                    <!--<el-button size="small" type="info" @click="readList">查询</el-button>-->
+                <!--</el-form-item>-->
+            <!--</el-form>-->
+        <!--</el-collapse-item>-->
+    <!--</el-collapse>-->
+    <!---------------------------查询面板 结束----------------------------------------------------------------------->
+    <!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+                  :row-class-name="tableRowClassName"
+        >
+            <el-table-column
+                    type="selection"
+                    prop="id"
+            >
+            </el-table-column>
+
+            <el-table-column
+                    prop="roleName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="角色名称"
+                    align="center"
+            >
+            </el-table-column>
+
+            <el-table-column
+                    prop="isMobileVisible"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号是否可见"
+                    align="center"
+            >
+            <template scope="scope">
+            	<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.isMobileVisible"></lz-dic-txt>
+            </template>
+            </el-table-column>
+
+
+            <el-table-column
+                    prop="roleType"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="角色类型"
+                    align="center"
+            >
+                <template scope="scope">
+                    <lz-dic-txt dic-type="ROLETYPE" :dic-code="scope.row.roleType"></lz-dic-txt>
+                </template>
+            </el-table-column>
+
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="130">
+                <template scope="scope">
+                    <el-button-group size="small">
+                        <el-button size="small" type="success" @click="showEditDialog(scope.row.id)">编辑</el-button>
+                        <el-button size="small" type="warning" @click="showMenuDialog(scope.row.id)">权限</el-button>
+                    </el-button-group>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="8">
+            <el-button size="small" type="info" @click="showAddDialog">新增</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+            <!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+    <!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    <!---------------------------弹出编辑窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="entity.id?'编辑':'新增'" :visible.sync="editFormVisible">
+        <el-form ref="editForm" :model="entity" :rules="rules">
+            <el-input size="small" v-model="entity.id" v-show="false"></el-input>
+            <el-col :span="12">
+                <el-form-item label="角色名称" label-width="100px" prop="roleName">
+                    <el-input size="small" v-model="entity.roleName" placeholder="角色名称"></el-input>
+                </el-form-item>
+            </el-col>
+            <el-col :span="12">
+                <el-form-item label="角色类型" label-width="100px" prop="roleType">
+                    <lz-dic-select dic-type="ROLETYPE" v-model="entity.roleType"></lz-dic-select>
+                </el-form-item>
+            </el-col>
+            <el-col :span="24">
+                <el-form-item label="手机号可见" label-width="100px" prop="isMobileVisible">
+                    <lz-dic-select dic-type="YESORNO" v-model="entity.isMobileVisible"></lz-dic-select>
+                </el-form-item>
+            </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="editFormVisible = false">取 消</el-button>
+            <el-button size="small" type="info" @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+    <!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+
+    <el-dialog title="角色权限" :visible.sync="permissionFormVisible">
+        <el-tree ref="menuTree" :data="menuTreeData"   node-key="id" accordion
+                 show-checkbox check-strictly></el-tree>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="permissionFormVisible = false">取 消</el-button>
+            <el-button size="small" type="info" @click="saveRoleMenus">保 存</el-button>
+        </div>
+    </el-dialog>
+</div>
+</body>
+<script src="/js/model/sysRole_index.js"></script>
+</html>

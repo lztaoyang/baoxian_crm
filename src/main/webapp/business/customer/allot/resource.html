@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!-- <script src="/js/lib/jquery.min.1.12.4.js"></script> -->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <style type="text/css">
+	  .el-table .info-row {
+	    /* background: #FFAEB9; */
+	    background: #FFC1C1;
+	  }
+	  .el-table .cell, .el-table th>div {
+    		padding-left : 2px;
+    		padding-right : 2px;
+    	}
+	</style>
+</head>
+<body>
+<input type="hidden" id="flow" value="101"/>
+<div id="app">
+<!---------------------------弹出资源调配窗口 开始----------------------------------------------------------------->
+    <el-dialog title="市场部" :visible.sync="allotVisible">
+          <el-row>
+		  	<el-col :span="12">
+		        <el-card class="box-card">
+		           	<el-tree ref="userTree" :data="userTreeData" node-key="id" accordion
+                		highlight-current @node-click="treeNodeClick"></el-tree>
+		        </el-card>
+		    </el-col>
+		    <el-col :span="12">
+		        <el-card class="box-card">
+		            <el-row>
+                    <el-table id="12324"
+                              :data="deptPageData.data"
+                              ref="entityTable"
+                              max-height="450"
+                              :row-key="key"
+                              empty-text="-"
+                              append="加载中..."
+                              :row-style="{'font-size':'13px'}"
+                              style="width: 100%"
+                              ref="singleTable"
+                              border
+                              highlight-current-row
+                              @current-change="allotCurrentChange">
+                        <el-table-column v-for="item in tableColumns"
+                                         :prop="item.prop"
+                                         min-width="100"
+                                         v-bind:show-overflow-tooltip="true"
+                                         :label="item.label">
+                        </el-table-column>
+                    </el-table>
+                </el-row>
+		        </el-card>
+		    </el-col>
+		    </el-row>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="allotVisible = false">取 消</el-button>
+            <el-button size="small" type="info" @click="allot">分配</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px;">
+		<el-form :inline="true" :model="searchParams" label-position="right" style="margin: 6px" >
+		   	<el-form-item label="入库日期" style="font-size: 13px;" prop="createtime">
+		  		<el-date-picker type="date" size="small" @change="dayFormat" placeholder="选择日期" v-model="searchParams.createtime"></el-date-picker>
+		  	</el-form-item>
+		  	<el-form-item label="客户姓名" style="font-size: 13px;" prop="name">
+		  		<el-input style="width:100px;" size="small" v-model="searchParams.name" placeholder="客户姓名" ></el-input>
+		  	</el-form-item>
+		  	<el-form-item label="手机号" style="font-size: 13px;" prop="mobile">
+		  		<el-input style="width:100px;" size="small" v-model="searchParams.mobile" placeholder="手机号或微信号" ></el-input>
+		  	</el-form-item>
+		   	<el-form-item label="所有人" style="font-size: 13px;" prop="subordinate">
+		  		<lz-dic-select style="width:100px;" dic-type="SUBORDINATES" v-model="searchParams.subordinate"></lz-dic-select>
+		  	</el-form-item>
+		  	<el-form-item label="业务员" style="font-size: 13px;" prop="salerId">
+				<el-select
+				style="width:110px;"
+			    v-model="searchParams.salerId"
+			    filterable
+			    remote
+			    placeholder="业务员"
+			    :remote-method="selectSaler"
+				:loading="loading">
+					<el-option
+						v-for="item in salerMap"
+						:key="item.value"
+						:label="item.label"
+						:value="item.value">
+					</el-option>
+				</el-select>
+		  	</el-form-item>
+	    	<el-form-item>
+	        	<el-button size="small" type="info" @click="readList()">查询</el-button>
+	        	<el-button size="small" @click="flushAndReadList">清空并刷新</el-button>
+	    	</el-form-item>
+		</el-form>
+	</el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+                  @row-dblclick="readDetail"
+                  :row-class-name="tableRowClassName"
+        >
+            <el-table-column
+                    type="selection"
+                    prop="id"
+                    width="25"
+                    align="center"
+                    v-if="isManager"
+            >
+            </el-table-column>
+            
+            <el-table-column
+                    prop="salerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="demand"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户需求"
+                    align="left"
+                    >
+                    <template scope="scope">
+                    	<span>{{ demandFormat(scope.row.demand,scope.row.planCode) }}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="remark"
+                    min-width="180"
+                    v-bind:show-overflow-tooltip="true"
+                    label="备注"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属总监"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="customer.fromInfo"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="入库时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="retainTime"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="距离到期"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{ retainTimeFormat(scope.row.retainTime) }}</span>
+                	</template>
+                </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+		<el-col :span="8">
+		    <el-button size="small" type="warning" v-show="isManager" @click="showAllotDialog">资源调配</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList()"
+                           @current-change="readList()"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+	<hr style="margin:0px ;"/>
+<!---------------------------弹出新增窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="录入客户" :visible.sync="addFormVisible">
+        <el-form ref="addForm" :model="entity" :rules="addRules">
+    	<el-col :span="12">
+        <el-form-item label="客户姓名" label-width="100px" prop="name">
+    			<el-input size="small" v-model="entity.name" placeholder="客户姓名" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="手机号" label-width="100px" prop="mobile">
+    			<el-input size="small" v-model="entity.mobile" placeholder="手机号" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="24">
+        <el-form-item label="开发需求" label-width="100px" prop="demand">
+	    	<el-input type="textarea" :rows="6" size="small" placeholder="必须告知资源来源说明，如果是转介绍，请注明转介绍及谁转介绍。否则签单不予通过" v-model="entity.demand"></el-input>
+	    </el-form-item>
+        </el-col>
+        </el-form>
+    	<el-col :span="24">
+            <el-button style="float:right;margin:10px 10px 10px 10px" size="small" type="info" @click="addSave">保 存</el-button>
+        </el-col>
+    </el-dialog>
+<!---------------------------弹出新增窗口 结束----------------------------------------------------------------------->
+<el-dialog title="申请签单" top="20%" :visible.sync="applyVisible">
+<el-row>
+	<el-form ref="applyForm" :model="applyEntity" :rules="applyRules" >
+    	<el-col :span="12">
+        	<el-form-item label="客户姓名：" label-width="120px" prop="customerName">
+				<span>{{ applyEntity.customerName }}</span>
+        	</el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        	<el-form-item label="手机号：" label-width="120px" prop="fuzzyMobile">
+				<span>{{ applyEntity.fuzzyMobile }}</span>
+        	</el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        	<el-form-item label="产品名称：" label-width="120px" prop="insuranceId">
+	        	<lz-dic-select style="width:106px;" v-model="applyEntity.insuranceId" dic-type="PRODUCT"></lz-dic-select>
+	        </el-form-item>
+        </el-col>
+        <el-col :span="12">
+        	<el-form-item label="签单金额：" label-width="120px" prop="amount">
+				<el-input type="number" style="width:106px;" size="small" v-model="applyEntity.amount" placeholder="单位：元" ></el-input>
+        	</el-form-item>
+        </el-col>
+        <el-col :span="12">
+			<el-form-item label="服务开始日期：" label-width="120px" style="font-size: 13px;" prop="startDate">
+				<el-date-picker type="date" size="small" placeholder="选择日期" @change="startDateFormat" v-model="applyEntity.startDate"></el-date-picker>
+			</el-form-item>
+	    </el-col>
+        <el-col :span="12">
+			<el-form-item label="服务结束日期：" label-width="120px" style="font-size: 13px;" prop="endDate">
+				<el-date-picker type="date" size="small" placeholder="选择日期" @change="endDateFormat" v-model="applyEntity.endDate"></el-date-picker>
+			</el-form-item>
+	    </el-col>
+	    <el-col :span="23">
+        	<el-form-item label="签单备注：">
+	        	<el-input type="textarea" :rows="5" size="small" placeholder="签单备注" v-model="applyEntity.remark"></el-input>
+	    	</el-form-item>
+        </el-col>
+        <el-col :span="12">
+		    <el-form-item label="消息提交码：" label-width="120px" prop="submitCode">
+		    	<el-input size="small" style="width:170px;" v-model="applyEntity.submitCode" placeholder="签单消息提交码"  @blur="checkSubmitCode(entity.submitCode)"></el-input>
+		    </el-form-item>
+	    </el-col>
+        <el-col :span="24">
+        	<el-row style="margin-top:10px;margin-bottom:10px;" type="flex" justify="center">
+		    	<el-button type="info"  @click="apply">申请签单</el-button>
+			</el-row>
+        </el-col>
+	</el-form>
+</el-dialog>
+<!---------------------------弹出详情窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="customerDetailTitle" size="large" top="2%" :before-close="handleClose" :visible.sync="detailFormVisible">
+    <el-col :span="16">
+    	<el-row type="flex" class="row-bg" justify="center">
+	    	<el-col :span="5">
+	    		<el-button size="small" :plain="flowType2" type="warning" @click="moveResource(entity.id,201)">未接资源</el-button>
+	    	</el-col>
+	    	<el-col :span="5">
+	    		<el-button size="small" :plain="flowType5" type="warning" @click="moveResource(entity.id,501)">意向资源</el-button>
+	    	</el-col>
+	    	<el-col :span="5">
+	    		<el-button size="small" :plain="flowType3" type="warning" @click="moveResource(entity.id,301)">可聊资源</el-button>
+	    	</el-col>
+	    	<el-col :span="5">
+	    		<el-button size="small" :plain="flowType4" type="danger" @click="moveResource(entity.id,901)" style="color:red;">丢弃资源</el-button>
+	    	</el-col>
+	    	<el-col :span="4">
+	    		<el-button size="small" :plain="flowType4" type="danger" @click="moveBlacklist(entity.id)" style="color:#999;">丢入黑名单</el-button>
+	    	</el-col>
+        </el-row>
+    	<el-row>
+        <el-form ref="detailForm" :model="entity" label-position="left">
+        	<el-row>
+        		<el-tag type="success">
+        			{{"来源渠道："}}
+        			<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="entity.fromInfo"></lz-dic-txt>
+        		</el-tag>
+        		<el-tag type="primary">{{ stuffFormat(entity.planCode,"推广专题") }}</el-tag>
+        		<el-tag type="warning">{{ stuffFormat(entity.keywords,"搜索关键词") }}</el-tag>
+        	</el-row>
+        	<el-row>
+            	<el-tag type="danger">{{ stuffFormat(entity.demand,"客户需求") }}</el-tag>
+        	</el-row>
+            <el-col :span="8">
+		    	<el-form-item label="姓名：" label-width="80px" prop="name">
+    				<el-input style="width:100px;" size="small" v-model="entity.name" placeholder="客户姓名" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+            	<el-form-item label="手机号：" label-width="80px" prop="showMobile">
+    				<span>{{ entity.showMobile }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="区域：">
+                	<span>{{ entity.province }} - {{ entity.city }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+        		<el-form-item label="性别：" label-width="80px" prop="sex">
+    			<lz-dic-select style="width:100px;" v-model="entity.sex" dic-type="SEX"></lz-dic-select>
+        		</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+            	<el-form-item label="年龄：" label-width="80px" prop="age">
+    				<el-input type="number" style="width:100px;" size="small" v-model="entity.age" placeholder="年龄" ></el-input>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="总监：">
+                	<span>{{ entity.directorName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="经理：">
+                	<span>{{ entity.managerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="业务员：">
+                	<span>{{ entity.salerName }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<!-- <el-col :span="23" style="border:1px dashed #50BFFF;"></el-col> -->
+            <el-col :span="23">
+                <el-form-item label="市场部备注：">
+	                <el-input type="textarea" :rows="5" size="small" placeholder="市场部备注" v-model="entity.remark"></el-input>
+	            </el-form-item>
+        	</el-col>
+        </el-form>
+        </el-row>
+        </el-col>
+        <el-col :span="8">
+        	<el-card class="box-card">
+		    <el-row>
+		    <el-row>
+        	<el-form ref="salerRecordForm" :model="salerRecordEntity1" >
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="success" :disabled="callDisable" @click="detailsCall">拨打电话</el-button>
+        		</el-col>
+        		<el-col :span="12">
+        			<el-button style="margin:0 0 10px 22px" size="large" type="danger" @click="topdrop">挂断电话</el-button>
+        		</el-col>
+		        <el-col :span="24">
+		        <el-form-item label="通话类型：" prop="type">
+		             <el-radio-group v-model="salerRecordEntity1.type">
+				    	<el-radio label="0">未接通</el-radio>
+						<el-radio label="1">已接通</el-radio>
+		  			</el-radio-group>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话时长：" prop="timeLength">
+		             <span>{{ timerFormat(salerRecordEntity1.timeLength) }}</span>
+		        </el-form-item>
+		        </el-col>
+		    	<el-col :span="24">
+		        <el-form-item label="通话内容：">
+		    		<el-input type="textarea" :rows="5" size="small" placeholder="请填写本次通话记录及备注下一次沟通内容" v-model="salerRecordEntity1.serverRecord"></el-input>
+		        </el-form-item>
+		        </el-col>
+		    </el-row>
+        	<el-row type="flex" class="row-bg" justify="center">
+	    		<el-button size="small" type="warning" @click="alarm()">下次通话提醒</el-button>
+				<el-button size="small" type="info" :disabled="showSaveButton"  @click="detailsSaveRecord">保存通话记录</el-button>
+			</el-row>
+        	</el-form>
+	        </el-row>
+	        </el-card>
+        </el-col>
+        <el-col :span="16">
+			<!-- <el-row style="margin-top:10px;" type="flex" justify="space-around"> -->
+			<el-row style="margin-top:10px;" type="flex" justify="center">
+				<el-button @click="previousResource(entity.id,entity.flowId,entity.createTime)" :disabled="querySuccess"><i class="el-icon-arrow-up"></i>上一个资源</el-button>
+				<el-button size="large" type="info" @click="updateSave" :disabled="querySuccess">保存客户信息</el-button>
+				<el-button @click="nextResource(entity.id,entity.flowId,entity.createTime)" :disabled="querySuccess">下一个资源<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+			</el-row>
+		</el-col>
+        <el-col :span="8">
+			<el-row style="margin-top:10px;" type="flex" justify="center">
+				<el-button size="large" @click="salerRecordText(entity.id)">语音识别</el-button>
+			</el-row>
+		</el-col>
+        <el-col>
+        <el-row style="margin-top:10px">
+        <el-tabs v-model="activeName" type="border-card">
+        	<el-tab-pane label="已接通话记录" name="record1">
+    			<span slot="label" @click="flushSalerRecord1">已接通话记录</span>
+				<el-table height="178" :data="salerRecordEntity2" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="40" align="center"></el-table-column>
+					<el-table-column prop="serverName" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="业务员" align="center"></el-table-column>
+					<el-table-column prop="type" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="是否接通" align="center">
+						<template scope="scope">
+							<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.type"></lz-dic-txt>
+						</template>
+					</el-table-column>
+					<el-table-column prop="serverRecord" min-width="320" v-bind:show-overflow-tooltip="true" 
+						label="通话内容" align="center"></el-table-column>
+					<el-table-column prop="callFile" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="录音文件" align="center" >
+							<template scope="scope">
+                    			<a :href="fptFormat(scope.row.callFile)">{{recordExist(scope.row.callFile)}}</a>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="timeLength" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="通话时长" align="center" >
+							<template scope="scope">
+                    			<span>{{timerFormat(scope.row.timeLength)}}</span>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="createTime" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+    		<el-tab-pane label="全部通话记录" name="record2">
+    			<span slot="label" @click="flushSalerRecord">全部通话记录</span>
+				<el-table height="178" :data="salerRecordEntity" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+					<el-table-column type="index" width="40" align="center"></el-table-column>
+					<el-table-column prop="serverName" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="业务员" align="center"></el-table-column>
+					<el-table-column prop="type" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="是否接通" align="center">
+						<template scope="scope">
+                    		<span v-if="scope.row.type == 1" style="display: block; width:100%;height:40px;line-height:40px;background-color: #FFAEB9;">是</span>
+                    		<span v-if="scope.row.type == 0">否</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="serverRecord" min-width="320" v-bind:show-overflow-tooltip="true" 
+						label="通话内容" align="center"></el-table-column>
+					<el-table-column prop="callFile" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="录音文件" align="center" >
+							<template scope="scope">
+                    			<a :href="fptFormat(scope.row.callFile)">{{recordExist(scope.row.callFile)}}</a>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="timeLength" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="通话时长" align="center" >
+							<template scope="scope">
+                    			<span>{{timerFormat(scope.row.timeLength)}}</span>
+                			</template>
+						</el-table-column>
+					<el-table-column prop="createTime" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{minuteFormat(scope.row.createTime)}}</span>
+                			</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+  		</el-tabs>
+  		</el-row>
+  		</el-col>
+    </el-dialog>
+    <el-dialog :visible.sync="alarmVisible">
+    	<el-row>
+    	<el-form ref="alarmForm" :model="alarmEntity" label-position="left">
+	    	<el-col :span="24">
+				<el-form-item label="提醒时间：" prop="alarmTime">
+					<el-date-picker style="width:180px;" v-model="alarmEntity.alarmTime" type="datetime" placeholder="选择日期时间" align="right" :picker-options="pickerOptions1">
+				</el-form-item>
+	    	</el-date-picker>
+			</el-col>
+	    	<el-col :span="24">
+				<el-form-item label="提醒内容：" prop="content">
+					<el-input type="textarea" :rows="6" size="small" placeholder="提醒内容" v-model="alarmEntity.content"></el-input>
+				</el-form-item>
+			</el-col>
+    	</el-form>
+    	</el-row>
+    	<el-row type="flex" class="row-bg" justify="center">
+			<el-button style="margin-top:12px" size="small" type="info"  @click="alarmSave">保存</el-button>
+		</el-row>
+		<el-table height="178" :data="alarmList" border ref="entityTable" stripe max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%" >
+			<el-table-column type="index" width="40" align="center"></el-table-column>
+			<el-table-column prop="content" min-width="260" v-bind:show-overflow-tooltip="true" 
+				label="提醒内容" align="left"></el-table-column>
+			<el-table-column prop="alarmTime" min-width="120" v-bind:show-overflow-tooltip="true" 
+				label="提醒时间" align="center" sortable>
+					<template scope="scope">
+                		<span>{{monthMinuteFormat(scope.row.alarmTime)}}</span>
+            		</template>
+			</el-table-column>
+			<el-table-column min-width="80" label="操作" align="center" >
+				<template scope="scope">
+                    <el-button-group size="small">
+						<el-button size="small" type="danger"  @click="alarmDel(scope.row.id)">删除</el-button>
+					</el-button-group>
+				</template>
+			</el-table-column>
+		</el-table>
+    </el-dialog>
+<!---------------------------弹出详情窗口 结束----------------------------------------------------------------------->
+<!---------------------------弹出黑名单窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="后续强烈拒接的客户才能设置为黑名单" :visible.sync="blacklistFormVisible">
+        <el-row>
+	        <el-form ref="blacklistForm" :model="blacklistEntity">
+		    	<el-col :span="24">
+			        <el-form-item label="" label-width="1px" prop="blackRemark">
+				    	<el-input type="textarea" :rows="6" size="small" placeholder="后续强烈拒接的客户才能设置为黑名单" v-model="blacklistEntity.blackRemark"></el-input>
+				    </el-form-item>
+		        </el-col>
+	        </el-form>
+        </el-row>
+    	<el-row type="flex" class="row-bg" justify="space-around">
+    		<span style="color:red;margin-top:10px;">空号、停机、不可聊等客户请使用丢弃功能，禁止使用黑名单！</span>
+	    	<el-button style="margin-top:10px;" size="small" type="info" @click="blacklistSave">保存到黑名单</el-button>
+    	</el-row>
+    </el-dialog>
+<!---------------------------弹出黑名单窗口 结束----------------------------------------------------------------------->
+</div>
+<input type="hidden" id="status" name="status" />
+<input type="hidden" id="callFile" name="callFile" />
+<script type="text/javascript">
+	function G (id,val) {
+		var obj = document.getElementById(id);
+		obj.value = val;
+	};
+	
+	/**
+     * 接收电话状态通知
+     * @param data
+     */
+    var notifyPhoneStatus = function(data){
+        //处理逻辑
+        //接收到电话状态
+        var event=data.event;
+        //根据不同事件类型进行处理
+        switch(event)
+        {
+            case "OnAnswered" :
+                console.log("收到状态通知:"+event);
+                if (data.direct == "out") {
+        			console.log("对方应答...","  录音:" + data.file + ",时间：" + data.dt );
+        		} else {
+        			console.log("我方应答...","  录音:" + data.file + ",时间：" + data.dt );
+        		}
+                G("callFile",data.file);
+        		//通话开始
+        		G("status",1);
+                break;
+            case "OnHangUp" :
+                console.log("收到状态通知:"+event);
+                if (data.direct == "out") {
+        			console.log("对方挂机...","  就绪:" + (data.sta == "1" ? "空闲" : "置忙") + "时间：" + data.dt );
+        		} else {
+        			console.log("我方挂机...","  就绪:" + (data.sta == "1" ? "空闲" : "置忙") + "时间：" + data.dt );
+        		}
+        		//通话结束
+        		G("status",2);
+                break;
+            default:
+                console.log("收到（摘机/挂机）外其他状态通知:"+event);
+        }
+    }
+	
+</script>
+</body>
+<script src="/business/customer/allot/resource.js"></script>
+</html>

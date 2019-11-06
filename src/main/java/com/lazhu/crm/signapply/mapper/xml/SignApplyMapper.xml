@@ -1,0 +1,861 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.signapply.mapper.SignApplyMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_sign_apply
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+				and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+				and from_info = #{cm.fromInfo}
+			</if>
+			<if test="cm.insureNum == 1 ">
+				and insure_num = 1
+			</if>
+			<if test="cm.insureNum == -1 ">
+				and insure_num &gt; 1
+			</if>
+			<if test="cm.insuranceId != null and cm.insuranceId != ''">
+				and insurance_id = #{cm.insuranceId}
+			</if>
+			<if test="cm.insuranceName != null and cm.insuranceName != ''">
+			    and insurance_name like concat(concat('%',#{cm.insuranceName}),'%')
+			</if>
+			<if test="cm.amount != null and cm.amount != ''">
+				and amount = #{cm.amount}
+			</if>
+			<if test="cm.salerId != null">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+			    and saler_name like concat(concat('%',#{cm.salerName}),'%')
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+			    and manager_name like concat(concat('%',#{cm.managerName}),'%')
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+			    and director_name like concat(concat('%',#{cm.directorName}),'%')
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+			    and minister_name like concat(concat('%',#{cm.ministerName}),'%')
+			</if>
+			<if test="cm.signStatus != null">
+				and sign_status = #{cm.signStatus}
+			</if>
+			<if test="cm.auditId != null and cm.auditId != ''">
+				and audit_id = #{cm.auditId}
+			</if>
+			<if test="cm.auditName != null and cm.auditName != ''">
+			    and audit_name like concat(concat('%',#{cm.auditName}),'%')
+			</if>
+			<if test="cm.auditReason != null and cm.auditReason != ''">
+			    and audit_reason like concat(concat('%',#{cm.auditReason}),'%')
+			</if>
+			<if test="cm.auditTime != null and cm.auditTime != ''">
+				and TO_DAYS(audit_time) = TO_DAYS(#{cm.auditTime})
+			</if>
+			<if test="cm.complianceId != null and cm.complianceId != ''">
+				and compliance_id = #{cm.complianceId}
+			</if>
+			<if test="cm.complianceName != null and cm.complianceName != ''">
+			    and compliance_name like concat(concat('%',#{cm.complianceName}),'%')
+			</if>
+			<if test="cm.complianceReason != null and cm.complianceReason != ''">
+			    and compliance_reason like concat(concat('%',#{cm.complianceReason}),'%')
+			</if>
+			<if test="cm.complianceTime != null and cm.complianceTime != ''">
+				and compliance_time = #{cm.complianceTime}
+			</if>
+			<if test="cm.signStatusWait != null">
+				and sign_status in (1,3)
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.auditTime1 != null and cm.auditTime1 != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.auditTime1})
+			</if>
+			<if test="cm.auditTime2 != null and cm.auditTime2 != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.auditTime2})
+			</if>
+			<if test="cm.upgraderId != null and cm.upgraderId != ''">
+				and upgrader_id = #{cm.upgraderId}
+			</if>
+			<if test="cm.upgraderName != null and cm.upgraderName != ''">
+			    and upgrader_name like concat(concat('%',#{cm.upgraderName}),'%')
+			</if>
+			<if test="cm.upgradeManagerId != null and cm.upgradeManagerId != ''">
+				and upgrade_manager_id = #{cm.upgradeManagerId}
+			</if>
+			<if test="cm.upgradeDirectorId != null and cm.upgradeDirectorId != ''">
+				and upgrade_director_id = #{cm.upgradeDirectorId}
+			</if>
+			<if test="cm.upgradeMinisterId != null and cm.upgradeMinisterId != ''">
+				and upgrade_minister_id = #{cm.upgradeMinisterId}
+			</if>
+			<if test="cm.isInterest != null and cm.isInterest != ''">
+				and is_interest = #{cm.isInterest}
+			</if>
+			<if test="cm.isUpgrade != null">
+				and is_upgrade = #{cm.isUpgrade}
+			</if>
+			<if test="cm.submitCodeIsNotNull != null">
+				and (submit_code is not null or submit_code != 0)
+			</if>
+			<if test="cm.cascaderId != null">
+			and 
+			<foreach item="item" index="index" collection="cm.cascaderId" separator="and">
+				<if test="index == 0">
+				 minister_id = #{item}
+				</if>
+				<if test="index == 1">
+				 director_id = #{item}
+				</if>
+				<if test="index == 2">
+				 manager_id = #{item}
+				</if>
+				<if test="index == 3">
+				 saler_id = #{item}
+				</if>
+          	</foreach>
+			</if>
+				and enable_ = 1
+		</where>
+	</select>
+	
+	
+	
+	
+	<select id="queryAuditNum" resultType="java.lang.Long">
+		select count(*) from crm_sign_apply 
+			where customer_id = #{customerId} 
+					and sign_status = 5 
+					and enable_ = 1	
+	</select>
+	
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+		select id from crm_sign_apply where customer_id = #{customerId} and enable_ = 1
+	</select>
+	
+	<select id="queryDealByCustomerId" resultType="java.lang.Long">
+		select id from crm_sign_apply 	
+			where customer_id = #{customerId} 
+				and sign_status = 5 
+				and enable_ = 1	
+				order by create_time desc
+	</select>
+	
+	<select id="applyNumByDate" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply 	
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(create_time) = TO_DAYS(#{someday})
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="sumAmountByDate" resultType="java.lang.Long">
+		select IFNULL(sum(amount),0) from crm_sign_apply
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(create_time) = TO_DAYS(#{someday})
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="enterNumByFromInfoAndBusiness" resultType="java.lang.Long">
+		select count(distinct customer_id) from crm_sign_apply
+		<where>
+			<if test="cm.isNewClub != null and cm.isNewClub != ''">
+				and is_new_club = #{cm.isNewClub}
+			</if>
+			<if test="cm.isLongTerm != null">
+				and is_long_term = #{cm.isLongTerm}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+			and sign_status = 5
+			and enable_ = 1
+		</where>
+		order by customer_id
+	</select>
+	
+	<select id="applyNumByFromInfoAndBusiness" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply
+		<where>
+			<if test="cm.isNewClub != null and cm.isNewClub != ''">
+				and is_new_club = #{cm.isNewClub}
+			</if>
+			<if test="cm.isLongTerm != null">
+				and is_long_term = #{cm.isLongTerm}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+			<if test="cm.upgraderId != null and cm.upgraderId != ''">
+				and upgrader_id = #{cm.upgraderId}
+			</if>
+			<if test="cm.upgradeManagerId != null and cm.upgradeManagerId != ''">
+				and upgrade_manager_id = #{cm.upgradeManagerId}
+			</if>
+			<if test="cm.upgradeDirectorId != null and cm.upgradeDirectorId != ''">
+				and upgrade_director_id = #{cm.upgradeDirectorId}
+			</if>
+			<if test="cm.isUpgrade != null">
+				and is_upgrade = #{cm.isUpgrade}
+			</if>
+			and sign_status = 5
+			and enable_ = 1
+		</where>
+	</select>
+	
+	<select id="insureMoneyByEnterAndBusiness" resultType="java.lang.Double">
+		select IFNULL(sum(amount),0) from crm_sign_apply
+		<where>
+			<if test="cm.isNewClub != null and cm.isNewClub != ''">
+				and is_new_club = #{cm.isNewClub}
+			</if>
+			<if test="cm.isLongTerm != null">
+				and is_long_term = #{cm.isLongTerm}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+			<if test="cm.upgradeManagerId != null and cm.upgradeManagerId != ''">
+				and upgrade_manager_id = #{cm.upgradeManagerId}
+			</if>
+			<if test="cm.upgradeDirectorId != null and cm.upgradeDirectorId != ''">
+				and upgrade_director_id = #{cm.upgradeDirectorId}
+			</if>
+			<if test="cm.isUpgrade != null">
+				and is_upgrade = #{cm.isUpgrade}
+			</if>
+			and sign_status = 5
+			and enable_ = 1
+		</where>
+	</select>
+	
+	<select id="selectFirstByCustomerId" resultType="java.lang.Long">
+		select id from crm_sign_apply
+		<where>
+			<if test="customerId != null and customerId != ''">
+				and customer_id = #{customerId}
+			</if>
+			and sign_status = 5
+		</where>
+			order by create_time asc
+	</select>
+	
+	<select id="selectAllSuccess" resultType="java.lang.Long">
+		select id from crm_sign_apply where sign_status = 5 and TO_DAYS(audit_time) &gt;= TO_DAYS('2018-01-01') order by audit_time desc
+	</select>
+	<select id="selectAllSign" resultType="java.lang.Long">
+		select id from crm_sign_apply where sign_status in (1,3,5) order by create_time asc
+	</select>
+	<select id="selectAll" resultType="java.lang.Long">
+		select id from crm_sign_apply order by create_time asc
+	</select>
+	
+	
+	
+	
+	<select id="effectiveNumFromInfo" resultType="java.lang.Long">
+		select count(distinct customer_id) from crm_sign_apply 	
+			<where>
+				<if test="someday != null">
+					and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+				</if>
+				<if test="fromInfoList != null">
+				    and from_info in 
+						<foreach item="item" index="index" collection="fromInfoList" 
+	                         open="(" separator="," close=")">
+	                        #{item}
+	                	</foreach>
+				</if>
+				and is_new_club = 1
+				and sign_status = 5
+				and enable_ = 1
+			</where>	
+			order by customer_id
+	</select>
+	
+	<select id="signNumFromInfo" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply 	
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+				and is_new_club = 1
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="sumAmountFromInfo" resultType="java.lang.Double">
+		select IFNULL(sum(amount),0) from crm_sign_apply
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+				and is_new_club = 1
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="daySignNumFromInfo" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply 	
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="daySignPremiumFromInfo" resultType="java.lang.Double">
+		select IFNULL(sum(amount),0) from crm_sign_apply
+			<where>
+			<if test="someday != null">
+				and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+			</if>
+			<if test="fromInfoList != null">
+			    and from_info in 
+					<foreach item="item" index="index" collection="fromInfoList" 
+                         open="(" separator="," close=")">
+                        #{item}
+                	</foreach>
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="isLongTermCommission" resultType="java.lang.Double">
+		select IFNULL(sum(commission),0) from crm_sign_apply
+			<where>
+			<if test="isLongTerm != null">
+				and is_long_term = #{isLongTerm}
+			</if>
+			<if test="someday != null">
+				and TO_DAYS(audit_time) = TO_DAYS(#{someday})
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	
+	
+	<select id="customerNumByProductId" resultType="java.lang.Long">
+		select count(distinct customer_id) from crm_sign_apply 	
+			<where>
+			<if test="productId != null">
+				and insurance_id = #{productId}
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="signNumByProductId" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply 	
+			<where>
+			<if test="productId != null">
+				and insurance_id = #{productId}
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="sumAmountByProductId" resultType="java.lang.Double">
+		select IFNULL(sum(amount),0) from crm_sign_apply
+			<where>
+			<if test="productId != null">
+				and insurance_id = #{productId}
+			</if>
+				and sign_status = 5
+				and enable_ = 1
+		</where>	
+	</select>
+	
+	<select id="queryUpgradeClubNum" resultType="java.lang.Long">
+		select count(distinct customer_id) from crm_sign_apply
+			<where>
+				<if test="cm.upgraderId != null and cm.upgraderId != ''">
+					and upgrader_id = #{cm.upgraderId}
+				</if>
+				<if test="cm.upgradeManagerId != null and cm.upgradeManagerId != ''">
+					and upgrade_manager_id = #{cm.upgradeManagerId}
+				</if>
+				<if test="cm.upgradeDirectorId != null and cm.upgradeDirectorId != ''">
+					and upgrade_director_id = #{cm.upgradeDirectorId}
+				</if>
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+				and sign_status = 5
+				and is_upgrade = 1
+				and enable_ = 1
+			</where>
+			order by customer_id
+	</select>
+	
+	<select id="queryUpgradeSignNum" resultType="java.lang.Long">
+		select count(id) from crm_sign_apply
+			<where>
+				<if test="cm.upgraderId != null and cm.upgraderId != ''">
+					and upgrader_id = #{cm.upgraderId}
+				</if>
+				<if test="cm.upgradeManagerId != null and cm.upgradeManagerId != ''">
+					and upgrade_manager_id = #{cm.upgradeManagerId}
+				</if>
+				<if test="cm.upgradeDirectorId != null and cm.upgradeDirectorId != ''">
+					and upgrade_director_id = #{cm.upgradeDirectorId}
+				</if>
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+				<if test="cm.upgradeNum != null and cm.upgradeNum != ''">
+					and upgrade_num = #{cm.upgradeNum}
+				</if>
+				<if test="cm.upgradeNumMore != null and cm.upgradeNumMore != ''">
+					and upgrade_num &gt;= #{cm.upgradeNumMore}
+				</if>
+				and sign_status = 5
+				and is_upgrade = 1
+				and enable_ = 1
+			</where>
+			order by customer_id
+	</select>
+	
+	<select id="countUpgradeNum" resultType="java.lang.Integer">
+		select count(id) from crm_sign_apply
+			where is_upgrade = 1
+				and sign_status = 5
+				and customer_id = #{customerId}
+				and enable_ = 1
+	</select>
+	
+	<!-- 经理保费排名 -->
+	<select id="queryAmountByManager" resultType="java.util.Map">
+		SELECT
+			user_name userName, <!-- 经理名称 -->
+		IF (nums IS NULL, 0, nums) nums, <!-- 单量 短险不算单量算保费-->
+		IF (amount IS NULL, 0, amount) amount<!-- 总保费 -->
+		FROM
+			(
+				SELECT
+					u.user_name,
+					u.id
+				FROM
+					sys_user u
+				WHERE
+					u.user_group = 88002002 <!-- 按经理分组 -->
+				AND u.enable_ = 1<!-- 启用 -->
+				AND u.locked_ = 0<!-- 未锁定 -->
+			) a
+		LEFT JOIN (
+			SELECT
+				SUM(amount) amount, <!-- 保费统计 -->
+				sa.manager_id, <!-- 经理id -->
+				count(1) AS nums <!-- 单量 -->
+			FROM
+				crm_sign_apply sa
+			<where>
+				sa.enable_ = 1
+			    and sa.sign_status = 5	<!-- 已成交 -->
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+			</where>
+			GROUP BY manager_id
+		) b ON a.id = b.manager_id
+		ORDER BY amount DESC <!-- 按总保费倒排 -->
+	</select>
+	
+	<!-- 总监保费排名 -->
+	<select id="queryAmountByDirector" resultType="java.util.Map">
+		SELECT
+			u.user_name userName, <!-- 经理名称 -->
+			count(1) as nums,     <!-- 单量 短险不算单量算保费-->
+			SUM(amount) as amount <!-- 总保费 -->
+		FROM
+			crm_sign_apply sa, sys_user u
+		<where>
+		    sa.enable_ = 1
+			and sa.sign_status = 5
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		  and sa.director_id = u.id 
+		  </where>
+		GROUP BY sa.director_id <!-- 按经理分组 -->
+		ORDER BY amount DESC <!-- 按总保费倒排 -->
+	</select>
+	
+	<!-- 总经理保费排名 -->
+	<select id="queryAmountByMinister" resultType="java.util.Map">
+		SELECT
+			u.user_name userName, <!-- 经理名称 -->
+			count(1) as nums,    <!-- 单量 短险不算单量算保费-->
+			SUM(amount) as amount <!-- 总保费 -->
+		FROM
+			crm_sign_apply sa, sys_user u
+		<where>
+		    sa.enable_ = 1
+			and sa.sign_status = 5
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		  and sa.minister_id = u.id 
+		  </where>
+		GROUP BY sa.minister_id <!-- 按经理分组 -->
+		ORDER BY amount DESC <!-- 按总保费倒排 -->
+	</select>
+	
+	<!-- 总业绩排名 -->
+	<select id="queryAmount" resultType="java.util.Map">
+		select 
+		count(1) as nums, <!-- 单量 短险不算单量算保费-->
+		SUM(amount) as amount   <!-- 总保费 短险20%算入业绩金额-->
+		from crm_sign_apply sa
+		<where>
+		    sa.enable_ = 1
+			and sa.sign_status = 5
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(sa.audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(sa.audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+	  	</where>
+	</select>
+	
+	<!-- 业务当天新单统计 -->
+	<select id="queryToDaySignNumGroupSalerId" resultType="java.util.Map">
+		select 
+			saler_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			and is_upgrade = 0
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY saler_id
+			ORDER BY nums DESC
+	</select>
+	<!-- 经理当天新单统计 -->
+	<select id="queryToDaySignNumGroupManagerId" resultType="java.util.Map">
+		select 
+			manager_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			and is_upgrade = 0
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY manager_id
+			ORDER BY nums DESC
+	</select>
+	<!-- 总监当天新单统计 -->
+	<select id="queryToDaySignNumGroupDirectorId" resultType="java.util.Map">
+		select 
+			director_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			and is_upgrade = 0
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY director_id
+			ORDER BY nums DESC
+	</select>
+	
+	<!-- 总经理当天新单统计 -->
+	<select id="queryToDaySignNumGroupMinisterId" resultType="java.util.Map">
+		select 
+			minister_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			and is_upgrade = 0
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY minister_id
+			ORDER BY nums DESC
+	</select>
+	
+	<!-- 当日总单量 -->
+	<select id="queryToDayAmount" resultType="java.util.Map">
+		select 
+		count(id) as nums ,
+		sum(amount) as amount 
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			and is_upgrade = 0
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryToDaySignNumByUpgraderId" resultType="java.lang.Integer">
+		select count(id) from crm_sign_apply 
+			where sign_status = 5
+				and TO_DAYS(audit_time) = TO_DAYS(NOW())
+				and upgrader_id = #{userId}
+	</select>
+	
+	
+	<!-- 业务当天签单统计 -->
+	<select id="queryToDaySignNumTotalSalerId" resultType="java.util.Map">
+		select 
+			saler_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY saler_id
+			ORDER BY nums DESC
+	</select>
+	<!-- 经理当天新单统计 -->
+	<select id="queryToDaySignNumTotalManagerId" resultType="java.util.Map">
+		select 
+			manager_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY manager_id
+			ORDER BY nums DESC
+	</select>
+	<!-- 总监当天新单统计 -->
+	<select id="queryToDaySignNumTotalDirectorId" resultType="java.util.Map">
+		select 
+			director_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY director_id
+			ORDER BY nums DESC
+	</select>
+	
+	<!-- 总经理当天新单统计 -->
+	<select id="queryToDaySignNumTotalMinisterId" resultType="java.util.Map">
+		select 
+			minister_name as userName, 
+			count(id) as nums ,
+			sum(amount) as amount  
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+			GROUP BY minister_id
+			ORDER BY nums DESC
+	</select>
+	
+	<!-- 当日总单量 -->
+	<select id="queryToDayTotalAmount" resultType="java.util.Map">
+		select 
+		count(id) as numsTotal ,
+		sum(amount) as amountTotal 
+		from crm_sign_apply 
+		<where>
+		 	sign_status = 5 
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(audit_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(audit_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+		</where>
+	</select>
+	
+</mapper>

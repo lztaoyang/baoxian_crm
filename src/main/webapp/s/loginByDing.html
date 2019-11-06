@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="renderer" content="webkit|ie-comp|ie-stand"> -->
+    <meta name="renderer" content="ie-comp|ie-stand">
+    <title>国诚客户管理系统</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .df_login {
+            width: 588px;
+            margin: 140px auto 0;
+        }
+        
+        .d_p1 {
+            font-size: 60px;
+            font-weight: 600;
+            color: #1459e7;
+            text-align: center;
+            line-height: 92px;
+        }
+        
+        .d_p2 {
+            font-size: 22px;
+            line-height: 42px;
+            color: #000;
+            text-align: center;
+        }
+        
+        .df_content {
+            width: 100%;
+            height: 310px;
+            border-radius: 0 0 10px 10px;
+            background: #fff;
+            padding: 40px 55px 44px 55px;
+            box-sizing: border-box;
+        }
+        
+        .df_list {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: 60px;
+            background: #fff;
+            position: relative;
+            padding-left: 80px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .login_img1 {
+            width: 30px;
+            position: absolute;
+            left: 30px;
+            top: 15px;
+        }
+        
+        .d_img3 {
+            width: 100%;
+            height: 210px;
+            display: block;
+        }
+        
+        .box_Fillet5 {
+            width: 100%;
+            height: 100%;
+            line-height: 60px;
+            border: 0;
+            font-size: 20px;
+            color: #666;
+            padding: 0;
+            background: #fff;
+            padding-left: 10px;
+            box-sizing: border-box;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .denglu {
+            height: 60px;
+            display: inline-block;
+            width: 100%;
+            border-radius: 10px;
+            background: #4680f6;
+            text-align: center;
+            font-size: 22px;
+            color: #fff;
+            line-height: 60px;
+            padding-left: 0;
+        }
+        
+        #account {
+            background: #fff!important;
+            border-radius: 10px;
+        }
+        .qr-code {
+		    width: 100%;
+		    display: inline-block;
+		    height: 340px;
+		    background-color:#FFF;
+		    position: relative;
+		    text-align: center;
+		    border-radius:80px 0 10px 10px;
+		}
+    </style>
+    <script type="text/javascript">
+        //默认加在cookie信息
+        window.onload = function() {
+            var imgArr = ["/img/df_bg1.png", "/img/df_bg2.png", "/img/df_bg3.png", "/img/df_bg4.png"];
+            var index = Math.round(Math.random() * 3);
+            $(".login_bg").attr("src", imgArr[index]);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="df_login">
+        <img src="/img/title-pic.png" alt="" class="d_img3">
+		<div class="qr-code">
+			<div id="login_container"></div>
+		</div>
+    </div>
+    <img src="/img/df_bg1.png" class="login_bg">
+</div>
+</body>
+<script type="text/javascript">
+!function (window, document) {
+    function d(a) {
+        var e, c = document.createElement("iframe"),
+            d = "https://login.dingtalk.com/login/qrcode.htm?goto=" + a.goto ;
+        d += a.style ? "&style=" + encodeURIComponent(a.style) : "",
+            d += a.href ? "&href=" + a.href : "",
+            c.src = d,
+            c.frameBorder = "0",
+            c.allowTransparency = "true",
+            c.scrolling = "no",
+            c.width =  a.width ? a.width + 'px' : "480px",
+            c.height = a.height ? a.height + 'px' : "320px",
+            e = document.getElementById(a.id),
+            e.innerHTML = "",
+            e.appendChild(c)
+    }
+    window.DDLogin = d
+}(window, document);
+</script>
+<script type="text/javascript">
+    var redirectUri = encodeURIComponent("http://172.16.203.53:8083/s/dd_login.html");
+    var appId = "dingoafi2ukfbx5pfilx7o";
+    var gotoString = encodeURIComponent("https://oapi.dingtalk.com/connect/oauth2/sns_authorize?appid="+appId+"&response_type=code&scope=snsapi_login&state=STATE&redirect_uri=" + redirectUri);
+    var obj = DDLogin({
+         id:"login_container",//这里需要你在自己的页面定义一个HTML标签并设置id，例如<div id="login_container"></div>或<span id="login_container"></span>
+         goto: gotoString, //请参考注释里的方式
+         style: "border:none;background-color:#FFFFFF;",
+         width : "588",
+         height: "500"
+     });
+    console.log(obj);
+    
+    //origin https://login.dingtalk.com
+    //login.html:316 loginTmpCode 4697bc68207a3e93a3acf769d0059f6b
+    var hanndleMessage = function (event) {
+        var origin = event.origin;
+        if( origin == "https://login.dingtalk.com" ) { //判断是否来自ddLogin扫码事件。
+            var loginTmpCode = event.data; //拿到loginTmpCode后就可以在这里构造跳转链接进行跳转了
+            var uu = "https://oapi.dingtalk.com/connect/oauth2/sns_authorize?appid="+appId+"&response_type=code&scope=snsapi_login&state=STATE&redirect_uri="+redirectUri+"&loginTmpCode="+loginTmpCode;
+            console.log(uu);
+            window.location.href = uu;
+        }
+	};
+	if (typeof window.addEventListener != 'undefined') {
+	    window.addEventListener('message', hanndleMessage, false);
+	} else if (typeof window.attachEvent != 'undefined') {
+	    window.attachEvent('onmessage', hanndleMessage);
+	}
+</script>
+</html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.aladdinpbx.recordlogs.mapper.RecordlogsMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from aladdinpbx_recordlogs
+		<where>
+			<if test="cm.recId != null and cm.recId != ''">
+			    and REC_ID = #{cm.recId})
+			</if>
+			<if test="cm.recExtnumber != null and cm.recExtnumber != ''">
+			    and REC_EXTNUMBER = #{cm.recExtnumber}
+			</if>
+			<if test="cm.recAgentid != null and cm.recAgentid != ''">
+			    and REC_AGENTID = #{cm.recAgentid}
+			</if>
+			<if test="cm.recStarttime != null and cm.recStarttime != ''">
+				and TO_DAYS(REC_STARTTIME) = TO_DAYS(#{cm.recStarttime})
+			</if>
+			<if test="cm.recEndtime != null and cm.recEndtime != ''">
+			and TO_DAYS(REC_ENDTIME) = TO_DAYS(#{cm.recEndtime})
+			</if>
+			<if test="cm.recRecordfile != null and cm.recRecordfile != ''">
+			    and REC_RECORDFILE like concat(concat('%',#{cm.recRecordfile}),'%')
+			</if>
+			<if test="cm.recRecordlength != null and cm.recRecordlength != ''">
+				and REC_RECORDLENGTH = #{cm.recRecordlength}
+			</if>
+			<if test="cm.recCallederid != null and cm.recCallederid != ''">
+			    and REC_CALLEDERID like concat(concat('%',#{cm.recCallederid}),'%')
+			</if>
+			<if test="cm.recRecordpath != null and cm.recRecordpath != ''">
+			    and REC_RECORDPATH = #{cm.recRecordpath}
+			</if>
+			<if test="cm.recPhonenumber != null and cm.recPhonenumber != ''">
+			    and REC_PHONENUMBER like concat(concat('%',#{cm.recPhonenumber}),'%')
+			</if>
+			<if test="cm.recHangup != null and cm.recHangup != ''">
+			    and REC_HANGUP like concat(concat('%',#{cm.recHangup}),'%')
+			</if>
+			<if test="cm.recCalltype != null">
+			    and REC_CALLTYPE  = #{cm.recCalltype}
+			</if>
+			<if test="cm.recRingwaittime != null and cm.recRingwaittime != ''">
+			    and REC_RINGWAITTIME like concat(concat('%',#{cm.recRingwaittime}),'%')
+			</if>
+			<if test="cm.recArea != null and cm.recArea != ''">
+			    and REC_AREA like concat(concat('%',#{cm.recArea}),'%')
+			</if>
+			<if test="cm.recAreacode != null and cm.recAreacode != ''">
+			    and REC_AREACODE like concat(concat('%',#{cm.recAreacode}),'%')
+			</if>
+			<if test="cm.recServerip != null and cm.recServerip != ''">
+			    and REC_SERVERIP like concat(concat('%',#{cm.recServerip}),'%')
+			</if>
+			<if test="cm.recTalktype != null and cm.recTalktype != ''">
+			    and REC_TALKTYPE like concat(concat('%',#{cm.recTalktype}),'%')
+			</if>
+			<if test="cm.recPbxip != null and cm.recPbxip != ''">
+			    and REC_PBXIP like concat(concat('%',#{cm.recPbxip}),'%')
+			</if>
+		</where>
+	</select>
+
+	<select id="queryByCallFile" resultType="java.lang.Long">
+		select id from aladdinpbx_recordlogs where rec_recordfile = #{callFile}
+	</select>
+
+	<select id="queryLengthByCallFile" resultType="java.lang.Long">
+		select REC_RECORDLENGTH from aladdinpbx_recordlogs where rec_recordfile = #{callFile}
+	</select>
+
+	<select id="queryAnswerByMaxId" resultType="java.lang.Long">
+		select id from aladdinpbx_recordlogs where id > #{answerMaxId} and REC_CALLTYPE  = '-1' order by id limit 10
+	</select>
+	
+</mapper>

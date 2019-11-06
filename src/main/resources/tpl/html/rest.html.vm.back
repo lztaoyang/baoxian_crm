@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>${table.comment}管理</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/bootstrap-editable.css">
+    <link rel="stylesheet" href="../css/bootstrap-table.min.1.11.1.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .mtable {
+            table-layout: fixed
+        }
+
+        .mtd {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <ol class="breadcrumb">
+        <li><a href="/">系统</a></li>
+        <li class="active">${table.comment}管理</li>
+    </ol>
+    <div class="panel-body" style="padding-bottom:0px;">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a data-toggle="collapse" data-parent="" href="#searchPanelBody">查询条件<span class="caret"></span></a>
+            </div>
+            <div id="searchPanelBody" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <form id="formSearch" class="form-horizontal">
+                        <div id="search-form" class="form-group container" style="margin-top:15px">
+                            <div class="input-group" v-for="p in entityPropertys" v-if="p.searchShow">
+                                <span class="input-group-addon">{{p.comment}}</span>
+                                <input :type="(p.propertyType=='Long'||p.propertyType=='Integer')?'number':(p.propertyType=='Date'?'date':'text')"
+                                       v-model="searchPanel.entity[p.propertyName]" :name="p.propertyName"
+                                       class="form-control" aria-label="...">
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary"
+                                    @click="search">查询
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="toolbar" class="btn-group">
+            <button id="btn_add" type="button" class="btn btn-default" @click="showAddPanel">
+                <span class="glyphicon glyphicon-plus"></span>新增
+            </button>
+        </div>
+        <div>
+            <bootstrap-table :table-param="tableParam"></bootstrap-table>
+        </div>
+    </div>
+    <!-- 编辑窗体 -->
+    <div class="modal fade" id="editPanel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{{editPanel.title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="edit-form" class="form-group row">
+                        <div class="input-group" v-for="p in entityPropertys" v-show="p.searchShow">
+                            <span class="input-group-addon">{{p.comment}}</span>
+                            <input v-if="editPanel.type=='detail'" v-model="editPanel.entity[p.propertyName]"
+                                   :type="(p.propertyType=='Long'||p.propertyType=='Integer')?'number':(p.propertyType=='Date'?'date':'text')"
+                                   :name="p.propertyName" class="form-control" aria-label="..." readonly>
+                            <input v-else v-model="editPanel.entity[p.propertyName]"
+                                   :type="(p.propertyType=='Long'||p.propertyType=='Integer')?'number':(p.propertyType=='Date'?'date':'text')"
+                                   :name="p.propertyName" class="form-control" aria-label="...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        {{editPanel.type=='detail'?'关闭':'取消'}}
+                    </button>
+                    <button type="button" class="btn btn-primary" @click="saveEntity" v-show="editPanel.type!='detail'">
+                        保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery.min.1.12.4.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/bootstrap-table.js"></script>
+<script src="../js/bootstrap-table-zh-CN.js"></script>
+<script src="../js/vue.min.2.2.6.js"></script>
+<script src="../js/bootstrap-editable.js"></script>
+<script src="../js/vue.bootstrapTable.js"></script>
+<script src="../js/mp.mansory.min.js"></script>
+<script src="../js/vue.alert.js"></script>
+<script src="../js/crudApp.js"></script>
+<script type="text/javascript">
+
+    var options = {
+        //api接口
+        api: {
+            list: "/${cfg.appName}/${package.ModuleName}/read/list",
+            detail: "/${cfg.appName}/${package.ModuleName}/read/detail",
+            update: "/${cfg.appName}/${package.ModuleName}",
+            delete: "/${cfg.appName}/${package.ModuleName}"
+        },
+        //实体属性元数据
+        entityPropertys:[
+#foreach($field in ${table.fields})
+		        {
+		            keyFlag:${field.keyFlag},//主键标识 
+		            propertyType:"${field.propertyType}",//属性变量类型
+		            propertyName:"${field.propertyName}",//属性变量名
+		            comment:"${field.comment}",//属性名称
+		            defaultFlag:${field.defaultFlag},//是否为公共默认属性
+#if ($field.keyFlag || $field.defaultFlag || (!$field.propertyType.equals("String") && !$field.propertyType.equals("Date")))
+		            columnShow:false,//是否为显示列
+		            editShow:false,//是否为编辑项
+		            searchShow:false//是否为查询项
+#else
+					columnShow:true,//是否为显示列
+					editShow:true,//是否为编辑项
+					searchShow:true//是否为查询项 
+#end
+        		}, 
+#end
+     		],
+        addPanel: "editPanel",//新增窗体
+        editPanel: "editPanel",//编辑窗体
+        detailPanel: "editPanel"//详情
+    }
+    //初始化界面
+    initCrudApp(options);
+</script>
+
+</body>
+</html>

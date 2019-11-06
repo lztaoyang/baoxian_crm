@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.t.allotplanning.mapper.AllotPlanningMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from t_allot_planning
+		<where>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and start_time = #{cm.startTime}
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and end_time = #{cm.endTime}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectAllEnable" resultType="java.lang.Long">
+		select id from t_allot_planning where enable_ = 1
+	</select>
+	
+</mapper>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <style type="text/css">
+	  .el-table .info-row .el-table_1_column_3{
+	    background: #58B7FF;
+	  }
+	</style>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:20px 10px 20px 10px;">
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+	    		<el-form-item label="入库开始日期" style="font-size: 13px;" prop="startTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat1" v-model="searchParams.startTime"></el-date-picker>
+		    	</el-form-item>
+				<el-form-item label="入库结束日期" style="font-size: 13px;" prop="endTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat2" v-model="searchParams.endTime"></el-date-picker>
+		    	</el-form-item>
+		    	
+	    		<el-form-item label="签单开始日期" style="font-size: 13px;" prop="signStartTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat3" v-model="searchParams.signStartTime"></el-date-picker>
+		    	</el-form-item>
+				<el-form-item label="签单结束日期" style="font-size: 13px;" prop="signEndTime">
+		    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat4" v-model="searchParams.signEndTime"></el-date-picker>
+		    	</el-form-item>
+		    	
+		    	<el-form-item label="执行人" label-width="100px" prop="executer">
+		    			<lz-dic-select style="width:100px" dic-type="RESOURCE_OP1" v-model="searchParams.executer"></lz-dic-select>
+		        </el-form-item>
+		        <el-form-item label="来源渠道" label-width="100px" prop="fromInfo">
+		    			<lz-dic-select style="width:100px" dic-type="RESOURCE_CHANNEL1" v-model="searchParams.fromInfo" :value="111"></lz-dic-select>
+		        </el-form-item>
+		    	<el-form-item label="短信验证" style="font-size: 13px;" prop="phoneStatus">
+		    		<lz-dic-select style="width:100px;" dic-type="SMSCHECK" v-model="searchParams.phoneStatus"></lz-dic-select>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <!-- <el-button size="small" type="success" icon="document" @click="tableExl('12324')">表格导出</el-button> -->
+                    <el-button size="small" type="success" icon="document" @click="exportApplyDetail">表格导出</el-button>
+                </el-form-item>
+            </el-form>
+          </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+         <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  :row-class-name="tableRowClassName"       
+                  @row-dblclick="accept"   
+        >
+            <el-table-column
+                    prop="enterTime"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="提交时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.enterTime)}}</span>
+                	</template>  
+                </el-table-column>
+                
+            <el-table-column
+                    prop="allot_time"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="分配时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.allot_time)}}</span>
+                	</template>
+                </el-table-column>
+                
+             <el-table-column
+                    prop="applyTime"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单时间"
+                    align="center"
+                    >
+                </el-table-column>     
+                
+             <el-table-column
+                    prop="executer"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="执行人"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_OP1" :dic-code="scope.row.executer"></lz-dic-txt>
+                	</template> 
+                </el-table-column>   
+                
+             <el-table-column
+                    prop="name"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="姓名"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.name)}}</span>
+                	</template>
+                </el-table-column>   
+                
+                <el-table-column
+                    prop="mobile"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{mobileFormat(scope.row.mobile)}}</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+                    prop="insureNum"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单次数"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.insureNum)}}</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+                    prop="insureMoney"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单总金额"
+                    align="center"
+                    >
+                </el-table-column>
+                
+                <el-table-column
+                    prop="content"
+                    min-width="280"
+                    v-bind:show-overflow-tooltip="true"
+                    label="内容"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.content)}}</span>
+                	</template>
+                </el-table-column>   
+                
+                <el-table-column
+                    prop="planCode"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="专题名"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.planCode)}}</span>
+                	</template>
+                </el-table-column>   
+                
+                <el-table-column
+                    prop="planName"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="计划名"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.planName)}}</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+                    prop="region"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="地域"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.region)}}</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+                    prop="sourceUrl"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源地址"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.sourceUrl)}}</span>
+                	</template>
+                </el-table-column>      
+                
+                <el-table-column
+                    prop="userAgent"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="userAgent浏览器"
+                    >
+                    <template scope="scope">
+                    	<span>{{fmtTxt(scope.row.userAgent)}}</span>
+                	</template>
+                </el-table-column>
+                
+             <el-table-column
+                    fixed="right"
+                    prop="fromInfo"
+                    min-width="140"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL1" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template> 
+                </el-table-column>
+                
+             <el-table-column
+            		fixed="right"
+                    prop="phoneStatus"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="号码状态"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="SMSCHECK" :dic-code="scope.row.phoneStatus"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+             <!-- <el-table-column
+                    fixed="right"
+                    prop="flowId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所在流程"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="FLOW_CODE" :dic-code="scope.row.flowId"></lz-dic-txt>
+                	</template> 
+                	 
+                </el-table-column> -->
+                
+                <!-- <el-table-column
+                    prop="type"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="分配结果"
+                    fixed="right"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="ALLOTTYPE" :dic-code="scope.row.type"></lz-dic-txt>
+                	</template>
+                </el-table-column>   --> 
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100, 500]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+<!-- 单击列表展示客户明细 -->
+	<el-dialog title="客户明细" :visible.sync="detailFormVisible"  size="large" center>
+		<el-form ref="entity" :model="entity">
+		<el-col :span="3">
+	        <el-form-item label="姓名" >
+	    		<span>{{ entity.name }}</span>
+	        </el-form-item>
+        </el-col>
+		<el-col :span="5">
+	        <el-form-item label="手机号：" label-width="80px">
+					<span>{{ entity.showMobile }}</span>
+        		</el-form-item>
+        </el-col>
+        <el-col :span="4">
+	        <el-form-item label="区域"  >
+	    		<span>{{ entity.province }} {{ entity.city }}</span>
+	        </el-form-item>
+        </el-col>
+        <el-col :span="6">
+	        <el-form-item label="提交时间"  >
+	    		<span>{{ monthMinuteFormat(entity.enterTime) }}</span>
+	        </el-form-item>
+        </el-col>
+        <el-col :span="6">
+	        <el-form-item label="分配时间"  >
+	    		<span>{{ monthMinuteFormat(entity.allotTime) }}</span>
+	        </el-form-item>
+        </el-col>
+        <el-col :span="24">
+	    	<el-form-item label="">
+               	<el-table id="4965"
+                  :data="applys.data"
+                  ref="entityTable"
+                  border
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+       		>
+            <el-table-column
+                    fixed="left"
+                    prop="insuranceId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="产品名称"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="ALLPRODUCT" :dic-code="scope.row.insuranceId"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+            		fixed="left"
+                    prop="amount"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="缴费金额"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="signStatus"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单状态"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="SIGNSTATUS" :dic-code="scope.row.signStatus"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="createTime"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="customerName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户手机"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="belong"
+                    min-width="180"
+                    v-bind:show-overflow-tooltip="true"
+                    label="市场部归属"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="fromInfo"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="auditReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="审核意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="complianceReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="合规意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="开始时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{birthdayFormat(scope.row.startDate)}}</span>
+                	</template>
+                </el-table-column>
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="结束时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{birthdayFormat(scope.row.endDate)}}</span>
+                	</template>
+                </el-table-column>
+   			</el-table>
+   			<hr style="margin:0px ;"/>
+           	</el-form-item>
+       	</el-col>
+       	</el-form>
+	</el-dialog>
+</div>
+</body>
+<a id="dlink"  style="display:none;"></a>
+<script type="text/javascript" language="javascript">
+	var idTmr;
+
+	function getExplorer() {
+		var explorer = window.navigator.userAgent;
+		//ie 
+		if(explorer.indexOf("MSIE") >= 0) {
+			return 'ie';
+		}
+		//firefox 
+		else if(explorer.indexOf("Firefox") >= 0) {
+			return 'Firefox';
+		}
+		//Chrome
+		else if(explorer.indexOf("Chrome") >= 0) {
+			return 'Chrome';
+		}
+		//Opera
+		else if(explorer.indexOf("Opera") >= 0) {
+			return 'Opera';
+		}
+		//Safari
+		else if(explorer.indexOf("Safari") >= 0) {
+			return 'Safari';
+		}
+	}
+
+	function method1(tableid) { //整个表格拷贝到EXCEL中
+		if(getExplorer() == 'ie') {
+			var curTbl = document.getElementById(tableid);
+			var oXL = new ActiveXObject("Excel.Application");
+
+			//创建AX对象excel 
+			var oWB = oXL.Workbooks.Add();
+			//获取workbook对象 
+			var xlsheet = oWB.Worksheets(1);
+			//激活当前sheet 
+			var sel = document.body.createTextRange();
+			sel.moveToElementText(curTbl);
+			//把表格中的内容移到TextRange中 
+			sel.select;
+			//全选TextRange中内容 
+			sel.execCommand("Copy");
+			//复制TextRange中内容  
+			xlsheet.Paste();
+			//粘贴到活动的EXCEL中       
+			oXL.Visible = true;
+			//设置excel可见属性
+			oWB.SaveAs;
+			var fname = "";
+			try {
+				fname = oXL.Application.GetSaveAsFilename("Excel.xls", "Excel Spreadsheets (*.xls), *.xls");
+			} catch(e) {
+				print("Nested catch caught " + e);
+			} finally {
+				oWB.SaveAs(fname);
+
+				oWB.Close(savechanges = false);
+				//xls.visible = false;
+				oXL.Quit();
+				oXL = null;
+				//结束excel进程，退出完成
+				//window.setInterval("Cleanup();",1);
+				idTmr = window.setInterval("Cleanup();", 1);
+
+			}
+
+		} else {
+			var date = new Date();
+			var dateString = date.toLocaleString();//获取日期与时间
+			tableToExcel(tableid, dateString + "导出.xls","");
+		}
+	}
+
+	function Cleanup() {
+		window.clearInterval(idTmr);
+		CollectGarbage();
+	}
+	var tableToExcel = (function() {
+		
+		var uri = 'data:application/vnd.ms-excel;base64,',
+			template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>',
+			base64 = function(s) {
+				return window.btoa(unescape(encodeURIComponent(s)))
+			},
+			format = function(s, c) {
+				return s.replace(/{(\w+)}/g,
+					function(m, p) {
+						return c[p];
+					})
+			}
+		return function(table,fileName,sheetName) {
+			var tableValue;
+			if (!table.nodeType) {
+				tableValue = document.getElementById(table);
+			}
+			var tableHtml = tableValue.innerHTML;
+			var lastIndex = tableHtml.lastIndexOf("提交时间");
+			tableHtml = tableHtml.substring(0, lastIndex);
+			var ctx = {
+				worksheet: sheetName || 'Worksheet',
+				table: tableHtml
+			}
+			//window.location.href = uri + base64(format(template, ctx))
+			document.getElementById("dlink").href = uri + base64(format(template, ctx));
+            //这里是关键所在,当点击之后,设置a标签的属性,这样就可以更改标签的标题了
+            document.getElementById("dlink").download = fileName;
+            document.getElementById("dlink").click();
+		}
+	})()
+</script>
+<script src="customerDetail999.js"></script>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>市场部正常工作轨迹管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+            	<el-form-item label="业务员" style="font-size: 13px;" prop="cascaderId">
+					  <el-cascader style="width:350px;" 
+					    :options="options"
+					    :clearable="true"
+					    filterable
+					    border
+					    change-on-select
+					    @change="cascaderChange"	     
+					  ></el-cascader>
+				</el-form-item>
+		    	<el-form-item label="开始日期" style="font-size: 13px;" prop="startTime">
+		    		<el-date-picker format="yyyy-MM-dd HH:mm" style="width:180px;" :editable="false" placeholder="选择日期时间"  type="datetime" @change="dayFormat1" v-model="searchParams.startTime"></el-date-picker>
+		    	</el-form-item>
+				<el-form-item label="结束日期" style="font-size: 13px;" prop="endTime">
+		    		<el-date-picker format="yyyy-MM-dd HH:mm" style="width:180px;" :editable="false" placeholder="选择日期时间"  type="datetime" @change="dayFormat2" v-model="searchParams.endTime"></el-date-picker>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="success" icon="document" @click="tableExl('12324')">表格导出</el-button>
+                </el-form-item>
+            </el-form>
+	</el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  stripe
+                  border
+                  max-height="450px"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            <el-table-column type="index" width="50" align="center"> </el-table-column>
+            
+            
+            <el-table-column
+                    prop="managerId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="经理"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="MANAGER" :dic-code="scope.row.managerId"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="userName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+                
+                
+         <el-table-column
+                    prop="before301"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="可聊变动"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{moveFormat(scope.row.after301,scope.row.before301)}}</span>
+                	</template>
+                </el-table-column>
+                
+         <el-table-column
+                    prop="before501"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="意向变动"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{moveFormat(scope.row.after501,scope.row.before501)}}</span>
+                	</template>
+                </el-table-column> 
+                
+            <el-table-column
+                    prop="call101"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="推广"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus101,scope.row.call101)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="call201"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="未接"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus201,scope.row.call201)}}</span>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="call301"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="可聊"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus301,scope.row.call301)}}</span>
+                	</template>
+                </el-table-column>
+                
+           <el-table-column
+                    prop="call501"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="意向"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus501,scope.row.call501)}}</span>
+                	</template>
+                </el-table-column>
+                
+           <el-table-column
+                    prop="call601"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="抽取"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus601,scope.row.call601)}}</span>
+                	</template>
+                </el-table-column>
+                
+         <el-table-column
+                    prop="call701"
+                    min-width="190"
+                    v-bind:show-overflow-tooltip="true"
+                    label="未明确"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{touchFormat(scope.row.cus701,scope.row.call701)}}</span>
+                	</template>
+                </el-table-column>      
+         <!--  
+         <el-table-column
+                    prop="customerId"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="资源ID"
+                    >
+                </el-table-column>     -->
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+</div>
+</body>
+<a id="dlink"  style="display:none;"></a>
+<script type="text/javascript" language="javascript">
+	var idTmr;
+
+	function getExplorer() {
+		var explorer = window.navigator.userAgent;
+		//ie 
+		if(explorer.indexOf("MSIE") >= 0) {
+			return 'ie';
+		}
+		//firefox 
+		else if(explorer.indexOf("Firefox") >= 0) {
+			return 'Firefox';
+		}
+		//Chrome
+		else if(explorer.indexOf("Chrome") >= 0) {
+			return 'Chrome';
+		}
+		//Opera
+		else if(explorer.indexOf("Opera") >= 0) {
+			return 'Opera';
+		}
+		//Safari
+		else if(explorer.indexOf("Safari") >= 0) {
+			return 'Safari';
+		}
+	}
+
+	function method1(tableid) { //整个表格拷贝到EXCEL中
+		if(getExplorer() == 'ie') {
+			var curTbl = document.getElementById(tableid);
+			var oXL = new ActiveXObject("Excel.Application");
+
+			//创建AX对象excel 
+			var oWB = oXL.Workbooks.Add();
+			//获取workbook对象 
+			var xlsheet = oWB.Worksheets(1);
+			//激活当前sheet 
+			var sel = document.body.createTextRange();
+			sel.moveToElementText(curTbl);
+			//把表格中的内容移到TextRange中 
+			sel.select;
+			//全选TextRange中内容 
+			sel.execCommand("Copy");
+			//复制TextRange中内容  
+			xlsheet.Paste();
+			//粘贴到活动的EXCEL中       
+			oXL.Visible = true;
+			//设置excel可见属性
+			oWB.SaveAs;
+			var fname = "";
+			try {
+				fname = oXL.Application.GetSaveAsFilename("Excel.xls", "Excel Spreadsheets (*.xls), *.xls");
+			} catch(e) {
+				print("Nested catch caught " + e);
+			} finally {
+				oWB.SaveAs(fname);
+
+				oWB.Close(savechanges = false);
+				//xls.visible = false;
+				oXL.Quit();
+				oXL = null;
+				//结束excel进程，退出完成
+				//window.setInterval("Cleanup();",1);
+				idTmr = window.setInterval("Cleanup();", 1);
+
+			}
+
+		} else {
+			var date = new Date();
+			var dateString = date.toLocaleString();//获取日期与时间
+			tableToExcel(tableid, dateString + "导出.xls","");
+		}
+	}
+
+	function Cleanup() {
+		window.clearInterval(idTmr);
+		CollectGarbage();
+	}
+	var tableToExcel = (function() {
+		
+		var uri = 'data:application/vnd.ms-excel;base64,',
+			template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>',
+			base64 = function(s) {
+				return window.btoa(unescape(encodeURIComponent(s)))
+			},
+			format = function(s, c) {
+				return s.replace(/{(\w+)}/g,
+					function(m, p) {
+						return c[p];
+					})
+			}
+		return function(table,fileName,sheetName) {
+			var tableValue;
+			if (!table.nodeType) {
+				tableValue = document.getElementById(table);
+			}
+			var tableHtml = tableValue.innerHTML;
+			var ctx = {
+				worksheet: sheetName || 'Worksheet',
+				table: tableHtml
+			}
+			//window.location.href = uri + base64(format(template, ctx))
+			document.getElementById("dlink").href = uri + base64(format(template, ctx));
+            //这里是关键所在,当点击之后,设置a标签的属性,这样就可以更改标签的标题了
+            document.getElementById("dlink").download = fileName;
+            document.getElementById("dlink").click();
+		}
+	})()
+</script>
+<script src="normal.js"></script>
+</html>

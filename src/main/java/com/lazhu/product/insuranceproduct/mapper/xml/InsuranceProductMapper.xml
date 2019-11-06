@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.product.insuranceproduct.mapper.InsuranceProductMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from bd_insurance_product
+		<where>
+			<if test="cm.name != null and cm.name != ''">
+			    and name like concat(concat('%',#{cm.name}),'%')
+			</if>
+			<if test="cm.code != null and cm.code != ''">
+				and code = #{cm.code}
+			</if>
+			<if test="cm.type != null">
+				and type = #{cm.type}
+			</if>
+			<if test="cm.isPutaway != null and cm.isPutaway != ''">
+				and is_putaway = #{cm.isPutaway}
+			</if>
+			<if test="cm.isPutaway == null or cm.isPutaway == ''">
+				and is_putaway = 1
+			</if>
+			and enable_ = 1
+		</where>
+			order by is_putaway desc,create_time desc
+	</select>
+	
+	<select id="queryAll" resultType="java.lang.Long">
+		select id from bd_insurance_product
+	</select>
+	
+	<select id="queryByIsPutaway" resultType="java.lang.Long">
+		select id from bd_insurance_product 
+		where is_putaway = 1 and enable_ = 1
+		order by create_time desc
+	</select>
+	
+	<select id="queryLongTermByIsPutaway" resultType="java.lang.Long">
+		select id from bd_insurance_product 
+		where is_putaway = 1 and enable_ = 1
+		order by create_time desc
+	</select>
+</mapper>

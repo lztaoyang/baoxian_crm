@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.t.resourceallot.mapper.ResourceAllotMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from t_resource_allot
+		<where>
+				and channel != 'personal'
+			<if test="cm.tId != null and cm.tId != ''">
+				and t_id = #{cm.tId}
+			</if>
+			<if test="cm.name != null and cm.name != ''">
+				and name like concat(concat('%',#{cm.name}),'%')
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+				and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+				and province like concat(concat('%',#{cm.province}),'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+				and city like concat(concat('%',#{cm.city}),'%')
+			</if>
+			<if test="cm.content != null and cm.content != ''">
+				and content like concat(concat('%',#{cm.content}),'%')
+			</if>
+			<if test="cm.planName != null and cm.planName != ''">
+				and plan_name like concat(concat('%',#{cm.planName}),'%')
+			</if>
+			<if test="cm.planCode != null and cm.planCode != ''">
+				and plan_code like concat(concat('%',#{cm.planCode}),'%')
+			</if>
+			<if test="cm.sourceUrl != null and cm.sourceUrl != ''">
+				and source_url like
+				concat(concat('%',#{cm.sourceUrl}),'%')
+			</if>
+			<if test="cm.refererUrl != null and cm.refererUrl != ''">
+				and referer_url like
+				concat(concat('%',#{cm.refererUrl}),'%')
+			</if>
+			<if test="cm.userAgent != null and cm.userAgent != ''">
+				and user_agent like
+				concat(concat('%',#{cm.userAgent}),'%')
+			</if>
+			<if test="cm.executer != null and cm.executer != ''">
+				and executer like concat(concat('%',#{cm.executer}),'%')
+			</if>
+			<if test="cm.createrTime != null and cm.createrTime != ''">
+				and creater_time = #{cm.createrTime}
+			</if>
+			<if test="cm.channel != null and cm.channel != ''">
+				and channel = #{cm.channel}
+			</if>
+			<if test="cm.ip != null and cm.ip != ''">
+				and ip like concat(concat('%',#{cm.ip}),'%')
+			</if>
+			<if test="cm.type != null">
+				and type = #{cm.type}
+			</if>
+			<if test="cm.resourceFlow != null">
+				and resource_flow = #{cm.resourceFlow}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+				and saler_name like CONCAT('%',#{cm.salerName},'%')
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+				and manager_name = like CONCAT('%',#{cm.managerName},'%')
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+				and director_name like CONCAT('%',#{cm.directorName},'%')
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+				and minister_name like CONCAT('%',#{cm.ministerName},'%')
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(creater_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(creater_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.createTime1 != null and cm.createTime1 != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.createTime1})
+			</if>
+			<if test="cm.createTime2 != null and cm.createTime2 != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.createTime2})
+			</if>
+			<if test="cm.allotTime1 != null and cm.allotTime1 != ''">
+				and TO_DAYS(allot_time) &gt;= TO_DAYS(#{cm.allotTime1})
+			</if>
+			<if test="cm.allotTime2 != null and cm.allotTime2 != ''">
+				and TO_DAYS(allot_time) &lt;= TO_DAYS(#{cm.allotTime2})
+			</if>
+			<if test="cm.smsCheck != null">
+				and sms_check = #{cm.smsCheck}
+			</if>
+			<if test="cm.sessionId != null">
+				and session_id = #{cm.sessionId}
+			</if>
+			<if test="cm.phoneStatus != null">
+				and phone_status = #{cm.phoneStatus}
+			</if>
+			<if test="cm.bizId != null">
+				and biz_id = #{cm.bizId}
+			</if>
+			<if test="cm.secretMobile != null">
+				and secret_mobile = #{cm.secretMobile}
+			</if>
+			<if test="cm.smsErrCode != null">
+				and sms_err_code = #{cm.smsErrCode}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryMaxTId" resultType="java.lang.Long">
+		select max(t_id) from
+		t_resource_allot
+	</select>
+
+	<select id="queryAllotResource" resultType="java.lang.Long">
+		select id from
+		t_resource_allot where enable_ = 1 and type = 0 limit 1
+	</select>
+
+	<select id="queryUserAllotMan" resultType="java.lang.Integer">
+		select count(id) from
+		sys_user
+		where enable_ = 1 and locked_ = 0
+		and is_allot_resource = 1
+		and
+		user_group = 88002001
+	</select>
+
+	<select id="queryUserWaitNum" resultType="java.lang.Integer">
+		select
+		sum(allot_resource_max - allot_resource_num) from sys_user
+		where
+		enable_ = 1 and locked_ = 0
+		and is_allot_resource = 1
+		and
+		allot_resource_max > allot_resource_num
+		and user_group = 88002001
+	</select>
+
+	<select id="queryResourceNum" resultType="java.lang.Integer">
+		select count(id) from
+		t_resource_allot
+		where TO_DAYS(create_time) = TO_DAYS(NOW()) and
+		enable_ = 1
+	</select>
+
+	<select id="queryResourceAllotNum" resultType="java.lang.Integer">
+		select count(id) from
+		t_resource_allot
+		where TO_DAYS(allot_time) = TO_DAYS(NOW()) and
+		enable_ = 1 and type = 1
+	</select>
+
+	<select id="queryResourceAInvalidNum" resultType="java.lang.Integer">
+		select count(id) from
+		t_resource_allot
+		where TO_DAYS(allot_time) = TO_DAYS(NOW()) and
+		enable_ = 1 and type &gt; 1
+	</select>
+
+	<select id="queryResourceWaitNum" resultType="java.lang.Integer">
+		select count(id)
+		from t_resource_allot
+		where enable_ = 1 and type = 0
+	</select>
+
+	<select id="querySharedpoolAllotNum" resultType="java.lang.Integer">
+		SELECT count(1) from crm_resource 
+		where is_sharedpool_allot = 1 
+		and TO_DAYS(create_time) = TO_DAYS(NOW())
+	</select>
+
+	<select id="queryMaxUpdateTime" resultType="java.util.Date">
+		select
+		max(source_update_time) from t_resource_allot
+	</select>
+
+	<select id="queryByTId" resultType="java.lang.Long">
+		select id from
+		t_resource_allot where t_id = #{tId}
+	</select>
+
+	<select id="queryByResourceId" resultType="java.lang.Long">
+		select id from
+		t_resource_allot where resource_id = #{resourceId}
+	</select>
+
+	<select id="queryMd5Mobile" resultType="java.util.Map">
+		select md5_mobile from t_resource_allot 
+			<where>
+				channel != 'personal'
+				<if test="cm.type != null">
+					and type = #{cm.type}
+				</if>
+				<if test="cm.channel != null and cm.channel != ''">
+					and channel = #{cm.channel}
+				</if>
+				<if test="cm.executer != null and cm.executer != ''">
+					and executer = #{cm.executer}
+				</if>
+				<if test="cm.resourceFlow != null">
+					and resource_flow = #{cm.resourceFlow}
+				</if>
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(creater_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(creater_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+				<if test="cm.name != null and cm.name != ''">
+					and name like concat(concat('%',#{cm.name}),'%')
+				</if>
+				<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+					and fuzzy_mobile = #{cm.fuzzyMobile}
+				</if>
+				<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+					and md5_mobile = #{cm.md5Mobile}
+				</if>
+				<if test="cm.province != null and cm.province != ''">
+					and province like concat(concat('%',#{cm.province}),'%')
+				</if>
+				<if test="cm.city != null and cm.city != ''">
+					and city like concat(concat('%',#{cm.city}),'%')
+				</if>
+			</where>
+	</select>
+	
+	<select id="queryAllotDetail" resultType="java.util.LinkedHashMap">
+		select 	sd2.code_text as executer,
+				ttt.creater_time as createrTime,
+				ttt.allot_time as allotTime,
+				ttt.name as name,
+				ttt.fuzzy_mobile as fuzzyMobile,
+				CONCAT(province,city) as province,
+				ttt.keywords as keywords,
+				ttt.ip as ip,
+				ttt.content as content,
+				ttt.plan_code as planCode,
+				ttt.plan_name as planName,
+				ttt.source_url as sourceUrl,
+				ttt.remark_ as remark,
+				ttt.user_agent as UserAgent,
+				ttt.minister_name as ministerName,
+				ttt.director_name as directorName,
+				ttt.manager_name as manager_name,
+				ttt.saler_name as saler_name,
+				sd5.code_text as resource_flow,
+				sd3.code_text as channel,
+				sd4.code_text as phone_status,
+				sd1.code_text as type
+			from t_resource_allot ttt
+				LEFT JOIN sys_dic sd1 ON sd1.code_=ttt.type and sd1.type_ = 'ALLOTTYPE'
+				LEFT JOIN sys_dic sd2 ON sd2.code_=ttt.executer and sd2.type_ = 'RESOURCE_OP'
+				LEFT JOIN sys_dic sd3 ON sd3.code_=ttt.channel and sd3.type_ = 'RESOURCE_CHANNEL'
+				LEFT JOIN sys_dic sd4 ON sd4.code_=ttt.phone_status and sd4.type_ = 'SMSCHECK'
+				LEFT JOIN sys_dic sd5 ON sd5.code_=ttt.resource_flow and sd5.type_ = 'FLOW_CODE' 
+			<where>
+				channel != 'personal'
+				<if test="cm.type != null">
+					and ttt.type = #{cm.type}
+				</if>
+				<if test="cm.channel != null and cm.channel != ''">
+					and ttt.channel = #{cm.channel}
+				</if>
+				<if test="cm.executer != null and cm.executer != ''">
+					and ttt.executer = #{cm.executer}
+				</if>
+				<if test="cm.managerId != null and cm.managerId != ''">
+					and ttt.manager_id = #{cm.managerId}
+				</if>
+				<if test="cm.smsCheck != null">
+					and ttt.sms_check = #{cm.smsCheck}
+				</if>
+				<if test="cm.phoneStatus != null">
+					and ttt.phone_status = #{cm.phoneStatus}
+				</if>
+				<if test="cm.resourceFlow != null">
+					and ttt.resource_flow = #{cm.resourceFlow}
+				</if>
+				<if test="cm.startTime != null and cm.startTime != ''">
+					and TO_DAYS(ttt.creater_time) &gt;= TO_DAYS(#{cm.startTime})
+				</if>
+				<if test="cm.endTime != null and cm.endTime != ''">
+					and TO_DAYS(ttt.creater_time) &lt;= TO_DAYS(#{cm.endTime})
+				</if>
+				<if test="cm.name != null and cm.name != ''">
+					and ttt.name like concat(concat('%',#{cm.name}),'%')
+				</if>
+				<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+					and ttt.fuzzy_mobile = #{cm.fuzzyMobile}
+				</if>
+				<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+					and ttt.md5_mobile = #{cm.md5Mobile}
+				</if>
+				<if test="cm.ip != null and cm.ip != ''">
+					and ttt.ip like concat(concat('%',#{cm.ip}),'%')
+				</if>
+			</where>
+			order by ttt.creater_time desc
+	</select>
+
+	 <update id="updateBatchAllot" parameterType="java.util.List">
+        <foreach collection="list" separator=";" item="t">
+            UPDATE t_resource_allot SET
+            type = #{t.type},
+            allot_time = #{t.allotTime},
+            resource_id = #{t.resourceId},
+            resource_flow = #{t.resourceFlow},
+            saler_id = #{t.salerId},
+            saler_name = #{t.salerName},
+            manager_id = #{t.managerId},
+            manager_name = #{t.managerName},
+            director_id = #{t.directorId},
+            director_name = #{t.directorName},
+            minister_id = #{t.ministerId},
+            minister_name = #{t.ministerName}
+            WHERE id = #{t.id}
+        </foreach>
+    </update>
+	
+	
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.customercotoperationlog.mapper.CustomerCotOperationLogMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_customer_cot_operation_log
+		<where>
+			<if test="cm.customerActualCotId != null and cm.customerActualCotId != ''">
+				and customer_actual_cot_id = #{cm.customerActualCotId}
+			</if>
+			<if test="cm.stockCode != null and cm.stockCode != ''">
+			    and stock_code like concat(concat('%',#{cm.stockCode}),'%')
+			</if>
+			<if test="cm.stockName != null and cm.stockName != ''">
+			    and stock_name like concat(concat('%',#{cm.stockName}),'%')
+			</if>
+			<if test="cm.directionType != null and cm.directionType != ''">
+				and direction_type = #{cm.directionType}
+			</if>
+			<if test="cm.tradeNum != null and cm.tradeNum != ''">
+				and trade_num = #{cm.tradeNum}
+			</if>
+			<if test="cm.tradePrice != null and cm.tradePrice != ''">
+				and trade_price = #{cm.tradePrice}
+			</if>
+			<if test="cm.tradeMoney != null and cm.tradeMoney != ''">
+				and trade_money = #{cm.tradeMoney}
+			</if>
+			<if test="cm.cotPrice != null and cm.cotPrice != ''">
+				and cot_price = #{cm.cotPrice}
+			</if>
+			<if test="cm.cotMoney != null and cm.cotMoney != ''">
+				and cot_money = #{cm.cotMoney}
+			</if>
+			<if test="cm.thenLossRatio != null and cm.thenLossRatio != ''">
+				and then_loss_ratio = #{cm.thenLossRatio}
+			</if>
+			<if test="cm.thenLossMoney != null and cm.thenLossMoney != ''">
+				and then_loss_money = #{cm.thenLossMoney}
+			</if>
+			<if test="cm.updateDate != null and cm.updateDate != ''">
+				and DATE_FORMAT(update_time,'%Y-%m-%d') = #{cm.updateDate}
+			</if>
+		</where>
+	</select>
+</mapper>

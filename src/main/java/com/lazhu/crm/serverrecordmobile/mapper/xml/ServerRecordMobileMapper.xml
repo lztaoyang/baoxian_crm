@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.serverrecordmobile.mapper.ServerRecordMobileMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_server_record_mobile
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.customerMobile != null and cm.customerMobile != ''">
+			    and customer_mobile like concat(concat('%',#{cm.customerMobile}),'%')
+			</if>
+			<if test="cm.serveResult != null and cm.serveResult != ''">
+			    and serve_result like concat(concat('%',#{cm.serveResult}),'%')
+			</if>
+			<if test="cm.serverRecord != null and cm.serverRecord != ''">
+			    and server_record like concat(concat('%',#{cm.serverRecord}),'%')
+			</if>
+			<if test="cm.serveTime != null and cm.serveTime != ''">
+				and serve_time = #{cm.serveTime}
+			</if>
+			<if test="cm.timeLength != null and cm.timeLength != ''">
+				and time_length = #{cm.timeLength}
+			</if>
+			<if test="cm.callFile != null and cm.callFile != ''">
+			    and call_file like concat(concat('%',#{cm.callFile}),'%')
+			</if>
+			<if test="cm.serverId != null and cm.serverId != ''">
+				and server_id = #{cm.serverId}
+			</if>
+			<if test="cm.serverName != null and cm.serverName != ''">
+			    and server_name like concat(concat('%',#{cm.serverName}),'%')
+			</if>
+			<if test="cm.serverMobile != null and cm.serverMobile != ''">
+			    and server_mobile like concat(concat('%',#{cm.serverMobile}),'%')
+			</if>
+			<if test="cm.type != null and cm.type != ''">
+			    and type like concat(concat('%',#{cm.type}),'%')
+			</if>
+			<if test="cm.callTime != null and cm.callTime != ''">
+				and call_time = #{cm.callTime}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+		select id from crm_server_record_mobile 
+		where customer_id = #{customerId} 
+		order by create_time desc
+	</select>
+	
+	<select id="queryByCallFile" resultType="java.lang.Long">
+		select id from crm_server_record_mobile 
+		where call_file = #{callFile} 
+		order by create_time desc
+	</select>
+	
+	<select id="queryOnlyCallFile" resultType="java.lang.Long">
+		select id from crm_server_record_mobile 
+		where enable_ = 1 and sync_num &lt;= 120 and call_file is not null
+		order by sync_num limit 100
+	</select>
+	
+	<select id="queryServerByCustomerId" resultType="java.lang.Long">
+		select id from crm_server_record_mobile 
+		where customer_id = #{customerId} and manager_id = 20
+		order by create_time desc
+	</select>
+	
+</mapper>

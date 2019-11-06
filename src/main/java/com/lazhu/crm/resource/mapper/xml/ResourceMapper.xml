@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.resource.mapper.ResourceMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_resource
+		<where>
+			<if test="cm.id != null and cm.id != ''">
+				and id = #{cm.id}
+			</if>
+			<if test="cm.allotId != null and cm.allotId != ''">
+				and allot_id = #{cm.allotId}
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.olFlowId != null and cm.olFlowId != ''">
+				and old_flow_id = #{cm.olFlowId}
+			</if>
+			<if test="cm.name != null and cm.name != ''">
+				and name like CONCAT('%',#{cm.name},'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+				and from_info = #{cm.fromInfo}
+			</if>
+			<if test="cm.enterTime != null and cm.enterTime != ''">
+				and TO_DAYS(enter_time) = TO_DAYS(#{cm.enterTime})
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+				and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+				and province like CONCAT('%',#{cm.province},'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+				and city like CONCAT('%',#{cm.city},'%')
+			</if>
+			<if test="cm.salerId != null">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+				and saler_name like CONCAT('%',#{cm.salerName},'%')
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+				and manager_name = like CONCAT('%',#{cm.managerName},'%')
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+				and director_name like CONCAT('%',#{cm.directorName},'%')
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+				and minister_name like CONCAT('%',#{cm.ministerName},'%')
+			</if>
+			<if test="cm.remark != null and cm.remark != ''">
+				and remark_ like CONCAT('%',#{cm.remark},'%')
+			</if>
+			<if test="cm.demand != null and cm.demand != ''">
+				and demand like CONCAT('%',#{cm.demand},'%')
+			</if>
+			<if test="cm.createtime != null and cm.createtime != ''">
+				and TO_DAYS(create_time) = TO_DAYS(#{cm.createtime})
+			</if>
+			<if test="cm.extractNum != null and cm.extractNum != ''">
+				and extract_num = #{cm.extractNum}
+			</if>
+			<if test="cm.isTalk != null">
+				and is_talk = #{cm.isTalk}
+			</if>
+			<if test="cm.isAdd != null">
+				and is_add = #{cm.isAdd}
+			</if>
+			<if test="cm.isAddChat != null">
+				and is_add_chat = #{cm.isAddChat}
+			</if>
+		</where>
+	</select>
+	
+	 <select id="isExist" resultType="java.lang.Long">
+		select count(id) from crm_resource
+			where md5_mobile = #{cm.md5Mobile} and enable_ = 1
+	</select>
+	
+	 <select id="isExists" resultType="java.lang.Long">
+		select count(id) from crm_resource
+		<where>
+		(
+			md5_mobile = #{cm.md5Mobile}
+		)
+			<if test="cm.updateBy != null and cm.updateBy != ''">
+				and (
+						create_by	!= #{cm.updateBy}
+					and	saler_id	!= #{cm.updateBy}
+					and	manager_id	!= #{cm.updateBy}
+					and	director_id	!= #{cm.updateBy}
+				)
+			</if>
+				and enable_ = 1
+		</where>
+	</select>
+	
+	<select id="queryProvinceByMobile"  resultType="java.lang.String">
+			select province from bd_mobile where phone = #{ mobile}
+	</select>
+	
+	<select id="queryCityByMobile"  resultType="java.lang.String">
+			select city from bd_mobile where phone = #{ mobile}
+	</select>
+	
+	<select id="queryIdByMd5Mobile"  resultType="java.lang.Long">
+		select id from crm_resource where md5_mobile = #{md5Mobile}
+	</select>
+	
+	<select id="queryByAllotId"  resultType="java.lang.Long">
+		select id from crm_resource where allot_id = #{allotId}
+	</select>
+	
+	<select id="queryAllRetain"  resultType="java.lang.Long">
+		select id from crm_resource 
+			where flow_id in (101,201,301,501,601,701)
+				and TO_DAYS(NOW()) >= TO_DAYS(retain_time) limit 3000
+	</select>
+	
+	<select id="queryToDayTochatNum" resultType="java.lang.Integer">
+		select count(id) from crm_resource
+			where TO_DAYS(talk_time) = TO_DAYS(NOW()) 
+				and flow_id = 201
+				and saler_id = #{userId}
+	</select>
+	
+	<select id="queryToDayDisposedNum" resultType="java.lang.Integer">
+		select count(id) from crm_resource
+			where TO_DAYS(talk_time) = TO_DAYS(NOW()) 
+				and flow_id = 501
+				and saler_id = #{userId}
+	</select>
+	
+	<select id="queryToDayPromoteResourceNum" resultType="java.lang.Integer">
+		select count(id) from crm_resource
+			where TO_DAYS(create_time) = TO_DAYS(NOW()) 
+				and from_info != 'personal'
+				and flow_id = 101
+				and saler_id = #{userId}
+	</select>
+	
+	<select id="queryToDayExtractNum" resultType="java.lang.Integer">
+		select count(id) from crm_resource
+			where TO_DAYS(extract_time) = TO_DAYS(NOW()) 
+				and saler_id = #{userId}
+	</select>
+	
+	<select id="queryDevelopDataNum"  resultType="java.util.Map">
+		select flow_id resourceFlowId,count(id) resourceNum from crm_resource
+		<where>
+			<!-- flow_id in (101,201,301,501,601,701) -->
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+		</where>
+		GROUP BY flow_id
+	</select>
+	
+	<select id="todayCallResourceNum" resultType="java.lang.Long">
+		select count(id) from crm_resource
+		<where>
+			TO_DAYS(last_call_time) = TO_DAYS(NOW())
+			<if test="cm.id != null and cm.id != ''">
+				and id = #{cm.id}
+			</if>
+			<if test="cm.allotId != null and cm.allotId != ''">
+				and allot_id = #{cm.allotId}
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.olFlowId != null and cm.olFlowId != ''">
+				and old_flow_id = #{cm.olFlowId}
+			</if>
+			<if test="cm.name != null and cm.name != ''">
+				and name like CONCAT('%',#{cm.name},'%')
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+				and from_info = #{cm.fromInfo}
+			</if>
+			<if test="cm.enterTime != null and cm.enterTime != ''">
+				and TO_DAYS(enter_time) = TO_DAYS(#{cm.enterTime})
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+				and province like CONCAT('%',#{cm.province},'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+				and city like CONCAT('%',#{cm.city},'%')
+			</if>
+			<if test="cm.salerId != null">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+				and saler_name like CONCAT('%',#{cm.salerName},'%')
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+				and manager_name = like CONCAT('%',#{cm.managerName},'%')
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+				and director_name like CONCAT('%',#{cm.directorName},'%')
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+				and minister_name like CONCAT('%',#{cm.ministerName},'%')
+			</if>
+			<if test="cm.remark != null and cm.remark != ''">
+				and remark_ like CONCAT('%',#{cm.remark},'%')
+			</if>
+			<if test="cm.demand != null and cm.demand != ''">
+				and demand like CONCAT('%',#{cm.demand},'%')
+			</if>
+			<if test="cm.createtime != null and cm.createtime != ''">
+				and TO_DAYS(create_time) = TO_DAYS(#{cm.createtime})
+			</if>
+			<if test="cm.extractNum != null and cm.extractNum != ''">
+				and extract_num = #{cm.extractNum}
+			</if>
+			<if test="cm.isTalk != null">
+				and is_talk = #{cm.isTalk}
+			</if>
+		</where>
+	</select>
+	
+	<update id="syncRecycleSharedPool">
+		update crm_resource set old_flow_id = flow_id,flow_id = 901,loss_time = NOW()
+			where flow_id in (101,201,301,501,601,701)
+				and NOW() >= retain_time
+	</update>
+	
+	<delete id="deleteSharedPool">
+        delete from crm_resource where flow_id = 901
+    </delete>
+    
+    <select id="resourceInitNum" resultType="java.lang.Integer">
+		select count(id) from crm_resource
+			where flow_id = 101
+				and saler_id = #{salerId}
+	</select>
+    
+	<select id="queryBySql" parameterType="String" resultType="java.util.Map">
+		${sql}
+	</select>
+	
+	<!-- 批量保存,并返回插入的ID -->
+	<insert id="insertBatchResource" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+	    INSERT INTO crm_resource (id,
+	    allot_id,
+	    name,
+	    fuzzy_mobile,
+	    md5_mobile,
+	    from_info,
+	    enter_time,
+	    demand,
+	    plan_code,
+	    keywords,
+	    province,
+	    city,
+	    retain_time,
+	    remark_,
+	    saler_id,
+	    saler_name,
+	    manager_id,
+	    manager_name,
+	    director_id,
+	    director_name,
+	    minister_id,
+	    minister_name,
+	    create_time,
+	    update_time)
+	    VALUES
+	    <foreach collection="list" item="item" separator=",">
+	        ( #{item.id},
+	          #{item.allotId},
+	          #{item.name},
+	          #{item.fuzzyMobile},
+	          #{item.md5Mobile},
+	          #{item.fromInfo},
+	          #{item.enterTime},
+	          #{item.demand},
+	          #{item.planCode},
+	          #{item.keywords},
+	          #{item.province},
+	          #{item.city},
+	          #{item.retainTime},
+	          #{item.remark},
+	          #{item.salerId},
+	          #{item.salerName},
+	          #{item.managerId},
+	          #{item.managerName},
+	          #{item.directorId},
+	          #{item.directorName},
+	          #{item.ministerId},
+	          #{item.ministerName},
+	          #{item.createTime},
+	          #{item.updateTime})
+	    </foreach>
+	</insert>
+</mapper>

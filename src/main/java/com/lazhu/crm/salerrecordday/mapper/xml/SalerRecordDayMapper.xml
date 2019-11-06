@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.salerrecordday.mapper.SalerRecordDayMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_saler_record_day
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.customerMobile != null and cm.customerMobile != ''">
+			    and customer_mobile like concat(concat('%',#{cm.customerMobile}),'%')
+			</if>
+			<if test="cm.mobile != null and cm.mobile != ''">
+			    and mobile like concat(concat('%',#{cm.mobile}),'%')
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+			    and fuzzy_mobile like concat(concat('%',#{cm.fuzzyMobile}),'%')
+			</if>
+			<if test="cm.serverRecord != null and cm.serverRecord != ''">
+			    and server_record like concat(concat('%',#{cm.serverRecord}),'%')
+			</if>
+			<if test="cm.timeLength != null and cm.timeLength != ''">
+				and time_length = #{cm.timeLength}
+			</if>
+			<if test="cm.testTimeLength != null and cm.testTimeLength != ''">
+				and test_time_length = #{cm.testTimeLength}
+			</if>
+			<if test="cm.testUpdateTime != null and cm.testUpdateTime != ''">
+				and test_update_time = #{cm.testUpdateTime}
+			</if>
+			<if test="cm.callFile != null and cm.callFile != ''">
+			    and call_file like concat(concat('%',#{cm.callFile}),'%')
+			</if>
+			<if test="cm.serverId != null and cm.serverId != ''">
+				and server_id = #{cm.serverId}
+			</if>
+			<if test="cm.serverName != null and cm.serverName != ''">
+			    and server_name like concat(concat('%',#{cm.serverName}),'%')
+			</if>
+			<if test="cm.serverMobile != null and cm.serverMobile != ''">
+			    and server_mobile like concat(concat('%',#{cm.serverMobile}),'%')
+			</if>
+			<if test="cm.type != null and cm.type != ''">
+			    and type like concat(concat('%',#{cm.type}),'%')
+			</if>
+			<if test="cm.agentNo != null and cm.agentNo != ''">
+			    and agent_no like concat(concat('%',#{cm.agentNo}),'%')
+			</if>
+			<if test="cm.direct != null and cm.direct != ''">
+				and direct = #{cm.direct}
+			</if>
+			<if test="cm.syncNum != null and cm.syncNum != ''">
+				and sync_num = #{cm.syncNum}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.translated != null and cm.translated != ''">
+			    and translated like concat(concat('%',#{cm.translated}),'%')
+			</if>
+			<if test="cm.isUpload != null and cm.isUpload != ''">
+				and is_upload = #{cm.isUpload}
+			</if>
+			<if test="cm.isTranslated != null and cm.isTranslated != ''">
+				and is_translated = #{cm.isTranslated}
+			</if>
+			<if test="cm.translatedNum != null and cm.translatedNum != ''">
+				and translated_num = #{cm.translatedNum}
+			</if>
+			<if test="cm.flowId != null and cm.flowId != ''">
+				and flow_id = #{cm.flowId}
+			</if>
+			<if test="cm.fromInfo != null and cm.fromInfo != ''">
+			    and from_info like concat(concat('%',#{cm.fromInfo}),'%')
+			</if>
+			<if test="cm.resourceTime != null and cm.resourceTime != ''">
+				and resource_time = #{cm.resourceTime}
+			</if>
+		</where>
+	</select>
+	
+	<select id="toDayCallStatistics" resultType="java.util.Map">
+		select count(id) callNum,
+				count(if(type='1',true,null)) throughNum,
+				count(if(time_length>59,true,null)) callValidNum,
+				sum(time_length) totalLength,
+				sum(if(time_length>59,time_length,0)) validLength
+		from crm_saler_record_day 
+		where server_id = #{userId}
+	</select>
+	
+	<select id="queryManagerGroup"  resultType="java.util.Map">
+		SELECT 
+			u.id,
+			u.userName,
+			rs.todayAddChatNum,
+			rs.todayChatNum,
+			rs.todayDisposedNum,
+			rs.yesterdayAddChatNum,
+			rs.yesterdayChatNum,
+			rs.yesterdayNum,
+			dayRecord.dayNum,
+			dayRecord.dayValidNum,
+			dayRecord.dayValidLength
+		from 
+			(
+				SELECT id,user_name userName FROM sys_user
+					WHERE enable_ = 1 AND locked_ = 0
+					AND id IN (
+						SELECT id FROM sys_user
+						WHERE 
+						user_group = #{userGroup}
+						AND parent_id = #{userId}
+					)
+				ORDER BY parent_id DESC
+			) as u
+		LEFT JOIN
+			(select saler_id rid,
+				count(if(is_add_chat = 1 and TO_DAYS(NOW()) = TO_DAYS(add_chat_time),true,null)) todayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayDisposedNum,
+				count(if(is_add_chat = 1 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(add_chat_time),true,null)) yesterdayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayNum
+				from crm_resource 
+				GROUP BY saler_id 
+			) as rs on u.id = rs.rid
+		LEFT JOIN
+			(select server_id,
+				count(id) dayNum,
+				sum(if(time_length>=#{validTiemLength},1,0)) dayValidNum,
+				sum(if(time_length>=#{validTiemLength},time_length,0)) dayValidLength
+				from crm_saler_record_day 
+				GROUP BY server_id
+			) as dayRecord on u.id = dayRecord.server_id
+		ORDER BY dayRecord.dayValidLength DESC
+	</select>
+	
+	<select id="queryDirectorGroup"  resultType="java.util.Map">
+		SELECT u.id,u.userName,
+			rs.todayAddChatNum,
+			rs.todayChatNum,
+			rs.todayDisposedNum,
+			rs.yesterdayAddChatNum,
+			rs.yesterdayChatNum,
+			rs.yesterdayNum,
+			dayRecord.dayNum,
+			dayRecord.dayValidNum,
+			dayRecord.dayValidLength
+		from 
+			(
+			SELECT id,user_name userName FROM sys_user
+				WHERE enable_ = 1 AND locked_ = 0
+					AND user_group = #{userGroup}
+					AND (
+						parent_id IN (
+							SELECT id FROM sys_user
+							WHERE (user_group = 88002002 or user_group = 88002667)
+							AND parent_id = #{userId}
+						)
+					)
+					ORDER BY parent_id DESC
+			) as u
+		LEFT JOIN
+			(select saler_id rid,
+				count(if(is_add_chat = 1 and TO_DAYS(NOW()) = TO_DAYS(add_chat_time),true,null)) todayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayDisposedNum,
+				count(if(is_add_chat = 1 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(add_chat_time),true,null)) yesterdayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayNum
+				from crm_resource 
+				GROUP BY saler_id 
+			) as rs on u.id = rs.rid
+		LEFT JOIN 
+			(select server_id,
+				count(id) dayNum,
+				sum(if(time_length>=#{validTiemLength},1,0)) dayValidNum,
+				sum(if(time_length>=#{validTiemLength},time_length,0)) dayValidLength
+				from crm_saler_record_day 
+				GROUP BY server_id
+			) as dayRecord on u.id = dayRecord.server_id
+		ORDER BY dayRecord.dayValidLength DESC
+	</select>
+	
+	<select id="queryMinisterGroup"  resultType="java.util.Map">
+		SELECT u.id,u.userName,
+			rs.todayAddChatNum,
+			rs.todayChatNum,
+			rs.todayDisposedNum,
+			rs.yesterdayAddChatNum,
+			rs.yesterdayChatNum,
+			rs.yesterdayNum,
+			dayRecord.dayNum,
+			dayRecord.dayValidNum,
+			dayRecord.dayValidLength
+		from 
+			(
+			SELECT id,user_name userName FROM sys_user
+				WHERE enable_ = 1 AND locked_ = 0
+					AND user_group = #{userGroup}
+					AND FIND_IN_SET(id,getBusinessLst(#{userId}))
+					ORDER BY parent_id DESC
+			) as u
+		LEFT JOIN
+			(select saler_id rid,
+				count(if(is_add_chat = 1 and TO_DAYS(NOW()) = TO_DAYS(add_chat_time),true,null)) todayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayDisposedNum,
+				count(if(is_add_chat = 1 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(add_chat_time),true,null)) yesterdayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayNum
+				from crm_resource 
+				GROUP BY saler_id 
+			) as rs on u.id = rs.rid
+		LEFT JOIN 
+			(select server_id,
+				count(id) dayNum,
+				sum(if(time_length>=#{validTiemLength},1,0)) dayValidNum,
+				sum(if(time_length>=#{validTiemLength},time_length,0)) dayValidLength
+				from crm_saler_record_day 
+				GROUP BY server_id
+			) as dayRecord on u.id = dayRecord.server_id
+		ORDER BY dayRecord.dayValidLength DESC
+	</select>
+	
+	<select id="queryAllNormalBusiness"  resultType="java.util.Map">
+		SELECT u.id,u.userName,
+			rs.todayAddChatNum,
+			rs.todayChatNum,
+			rs.todayDisposedNum,
+			rs.yesterdayAddChatNum,
+			rs.yesterdayChatNum,
+			rs.yesterdayNum,
+			dayRecord.dayNum,
+			dayRecord.dayValidNum,
+			dayRecord.dayValidLength
+		from 
+			(
+			SELECT id,user_name userName FROM sys_user
+				WHERE enable_ = 1 AND locked_ = 0
+					AND user_group = #{userGroup}
+					ORDER BY parent_id DESC
+			) as u
+		LEFT JOIN
+			(select saler_id rid,
+				count(if(is_add_chat = 1 and TO_DAYS(NOW()) = TO_DAYS(add_chat_time),true,null)) todayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(NOW()) = TO_DAYS(talk_time),true,null)) todayDisposedNum,
+				count(if(is_add_chat = 1 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(add_chat_time),true,null)) yesterdayAddChatNum,
+				count(if(flow_id = 301 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayChatNum,
+				count(if(flow_id = 501 and TO_DAYS(DATE_SUB(NOW(),INTERVAL 1 day)) = TO_DAYS(talk_time),true,null)) yesterdayNum
+				from crm_resource 
+				GROUP BY saler_id 
+			) as rs on u.id = rs.rid
+		LEFT JOIN 
+			(select server_id,
+				count(id) dayNum,
+				sum(if(time_length>=#{validTiemLength},1,0)) dayValidNum,
+				sum(if(time_length>=#{validTiemLength},time_length,0)) dayValidLength
+				from crm_saler_record_day 
+				GROUP BY server_id
+			) as dayRecord on u.id = dayRecord.server_id
+		ORDER BY dayRecord.dayValidLength DESC
+	</select>
+	
+</mapper>

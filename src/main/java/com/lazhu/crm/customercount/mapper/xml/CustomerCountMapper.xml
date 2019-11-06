@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.customercount.mapper.CustomerCountMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_customer_count
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.allotId != null and cm.allotId != ''">
+				and allot_id = #{cm.allotId}
+			</if>
+			<if test="cm.applyNum != null and cm.applyNum != ''">
+				and apply_num = #{cm.applyNum}
+			</if>
+			<if test="cm.upgradeNum != null and cm.upgradeNum != ''">
+				and upgrade_num = #{cm.upgradeNum}
+			</if>
+			<if test="cm.refundNum != null and cm.refundNum != ''">
+				and refund_num = #{cm.refundNum}
+			</if>
+			<if test="cm.applyMoney != null and cm.applyMoney != ''">
+				and apply_money = #{cm.applyMoney}
+			</if>
+			<if test="cm.upgradeMoney != null and cm.upgradeMoney != ''">
+				and upgrade_money = #{cm.upgradeMoney}
+			</if>
+			<if test="cm.refundMoney != null and cm.refundMoney != ''">
+				and refund_money = #{cm.refundMoney}
+			</if>
+			<if test="cm.insureMoney != null and cm.insureMoney != ''">
+				and insure_money = #{cm.insureMoney}
+			</if>
+			<if test="cm.validMoney != null and cm.validMoney != ''">
+				and valid_money = #{cm.validMoney}
+			</if>
+			<if test="cm.channel != null and cm.channel != ''">
+			    and channel like concat(concat('%',#{cm.channel}),'%')
+			</if>
+			<if test="cm.executer != null and cm.executer != ''">
+			    and executer like concat(concat('%',#{cm.executer}),'%')
+			</if>
+			<if test="cm.planCode != null and cm.planCode != ''">
+			    and plan_code like concat(concat('%',#{cm.planCode}),'%')
+			</if>
+			<if test="cm.enterTime != null and cm.enterTime != ''">
+				and enter_time = #{cm.enterTime}
+			</if>
+			<if test="cm.enterTimeSolt != null and cm.enterTimeSolt != ''">
+			    and enter_time_solt like concat(concat('%',#{cm.enterTimeSolt}),'%')
+			</if>
+			<if test="cm.age != null and cm.age != ''">
+				and age = #{cm.age}
+			</if>
+			<if test="cm.province != null and cm.province != ''">
+			    and province like concat('%',#{cm.province},'%')
+			</if>
+			<if test="cm.city != null and cm.city != ''">
+			    and city like concat('%',#{cm.city},'%')
+			</if>
+			<if test="cm.sex != null and cm.sex != ''">
+				and sex = #{cm.sex}
+			</if>
+			<if test="cm.name != null and cm.name != ''">
+			    and name like concat('%',#{cm.name},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectCountByCustomerId" resultType="java.lang.Long">
+	select id from crm_customer_count
+		<where>
+			<if test="customerId != null and customerId != ''">
+				and customer_id = #{customerId}
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateCustomerApply">
+		update crm_customer_count set 
+		<if test="isDel != null and isDel == 0">
+			apply_num = apply_num + 1 , apply_money = apply_money + #{applyAmount},insure_money = insure_money + #{applyAmount},valid_money = valid_money + #{applyAmount},update_time = now()
+		</if>
+		<if test="isDel != null and isDel == 1">
+			apply_num = apply_num - 1 , apply_money = apply_money - #{applyAmount},insure_money = insure_money - #{applyAmount},valid_money = valid_money - #{applyAmount},update_time = now()
+		</if>
+		where customer_id = #{customerId}
+	</update>
+	
+	<update id="updateCustomerUpgrade">
+		update crm_customer_count set 
+		<if test="isDel != null and isDel == 0">
+			upgrade_num = upgrade_num + 1 , upgrade_money = upgrade_money + #{upgradeAmount},insure_money = insure_money + #{upgradeAmount},valid_money = valid_money + #{upgradeAmount} ,update_time = now()
+		</if>
+		<if test="isDel != null and isDel == 1">
+			upgrade_num = upgrade_num - 1 , upgrade_money = upgrade_money - #{upgradeAmount},insure_money = insure_money - #{upgradeAmount},valid_money = valid_money - #{upgradeAmount},update_time = now()
+		</if>
+		where customer_id = #{customerId}
+	</update>
+	
+	<update id="updateCustomerRefund">
+		update crm_customer_count set 
+		<if test="isWaver != null and isWaver == 0">
+		refund_inner_num = refund_inner_num + 1 , refund_inner_money = refund_inner_money + #{refundAmount},valid_money = valid_money - #{refundAmount},update_time = now()
+		</if>
+		<if test="isWaver != null and isWaver == 1">
+		refund_outer_num = refund_outer_num + 1 , refund_outer_money = refund_outer_money + #{refundAmount},update_time = now()
+		</if>
+		 where customer_id = #{customerId}
+	</update>
+	
+	<!-- 客户统计报表 -->
+	<select id="queryByDimension" resultType="java.util.Map">
+		<if test="cc != null">
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "channel" '>
+				select channel dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY channel
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "executer" '>
+				select executer dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count where executer in (select code_ from sys_dic where type_ = 'RESOURCE_OP1' and locked_ = 1)  <include refid="paramFilterForExecuter" /> GROUP BY executer
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "timeslot" '>
+				select date_format(enter_time,'%H') dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY date_format(enter_time,'%H')
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "plan" '>
+				select plan_code dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY plan_code
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "age" '>
+				select age dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY age
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "province" '>
+				select province dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY province
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "city" '>
+				select IFNULL(city,province) dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY city
+			</if>
+			<if test='cc.dimension != null &amp;&amp; cc.dimension == "sex" '>
+				select sex dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count <include refid="paramFilter" /> GROUP BY sex
+			</if>
+		</if>
+		<if test="cc == null || cc.dimension == null">
+			select channel dimension,count(*) customerNum,sum(apply_num + UPGRADE_num) orderNum,sum(insure_money) insureMoney  from crm_customer_count  GROUP BY channel
+		</if>
+	</select>
+	<!-- 查询条件 -->
+	<sql id="paramFilter">
+			<where>
+				<if test="cc.channel">
+				and channel = #{cc.channel}
+				</if>
+				<if test="cc.executer">
+				and executer = #{cc.executer}
+				</if>
+				<if test="cc.timeslot">
+				and date_format(enter_time,'%H') = #{cc.timeslot}
+				</if>
+				<if test="cc.age">
+				and age = #{cc.age}
+				</if>
+				<if test="cc.province">
+				and province like concat('%',#{cc.province},'%')
+				</if>
+				<if test="cc.city">
+				and city like concat('%',#{cc.city},'%')
+				</if>
+				<if test="cc.sex">
+				and sex = #{cc.sex}
+				</if>
+				<if test="cc.startDate != null and cc.startDate != ''">
+					and enter_time >= #{cc.startDate}
+				</if>
+				<if test="cc.endDate != null and cc.endDate != ''">
+					<![CDATA[ and enter_time <= #{cc.endDate} ]]>
+				</if>
+			</where>
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="paramFilterForExecuter">
+			<if test="cc.channel">
+			and channel = #{cc.channel}
+			</if>
+			<if test="cc.executer">
+			and executer = #{cc.executer}
+			</if>
+			<if test="cc.timeslot">
+			and date_format(enter_time,'%H') = #{cc.timeslot}
+			</if>
+			<if test="cc.age">
+			and age = #{cc.age}
+			</if>
+			<if test="cc.province">
+			and province like concat('%',#{cc.province},'%')
+			</if>
+			<if test="cc.city">
+			and city like concat('%',#{cc.city},'%')
+			</if>
+			<if test="cc.sex">
+			and sex = #{cc.sex}
+			</if>
+			<if test="cc.startDate != null and cc.startDate != ''">
+				and enter_time >= #{cc.startDate}
+			</if>
+			<if test="cc.endDate != null and cc.endDate != ''">
+				<![CDATA[ and enter_time <= #{cc.endDate} ]]>
+			</if>
+	</sql>
+	
+	<delete id="deleteByCustomerId">
+		delete from crm_customer_count where customer_id = #{customerId}
+	</delete>
+</mapper>

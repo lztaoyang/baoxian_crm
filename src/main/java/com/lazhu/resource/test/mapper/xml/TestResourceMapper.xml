@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.resource.test.mapper.TestResourceMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from resource_test
+		<where>
+			<if test="cm.mobile != null and cm.mobile != ''">
+			    and mobile like concat(concat('%',#{cm.mobile}),'%')
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryEnable" resultType="java.lang.Long">
+		select id from resource_test where enable_ = 1
+	</select>
+	
+</mapper>

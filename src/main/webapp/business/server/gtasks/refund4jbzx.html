@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <style type="text/css">
+	  .el-table .info-row{
+	    background: #58B7FF;
+	  }
+	  .el-table .cell, .el-table th>div {
+		    padding-left: 0px;
+		    padding-right: 0px;
+		}
+	  .row-bg {
+		padding: 10px 0;
+		background-color: #f9fafc;
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 10px 10px;">
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+		    	<el-form-item label="退保类型" style="font-size: 13px;" prop="refundType">
+		    		<lz-dic-select  dic-type="REFUND_TYPE" v-model="searchParams.refundType"></lz-dic-select>
+		    	</el-form-item>
+	    		<el-form-item label="客户姓名" style="font-size: 13px;" prop="customerName">
+		    		<el-input size="small" v-model="searchParams.customerName" placeholder="客户姓名" ></el-input>
+		    	</el-form-item>
+		    	<el-form-item label="保单号" style="font-size: 13px;" prop="policyNo">
+		    		<el-input size="small" v-model="searchParams.policyNo" placeholder="保单号" ></el-input>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="1256324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  stripe
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @row-dblclick="readDetail"
+        >
+        
+        	<el-table-column
+                    prop="updateTime"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="处理时间"
+                    align="center"
+                    >
+                      <template scope="scope">
+                    	<span>{{minuteFormat(scope.row.update_time)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="customer_name"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="退保客户"
+                     align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="insurance_name"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="退保产品"
+                    align="center"
+                    >
+                </el-table-column>    
+                
+            <el-table-column
+                    prop="amount"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单金额(元)"
+                    align="center"
+                    >
+                </el-table-column>    
+                
+            <el-table-column
+                    prop="payTime"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="支付时间"
+                    align="center"
+                    >
+                      <template scope="scope">
+                    	<span>{{minuteFormat(scope.row.payTime)}}</span>
+                	</template>
+                    </el-table-column>   
+                    
+              <el-table-column
+                    prop="remark_"
+                    min-width="300"
+                    v-bind:show-overflow-tooltip="true"
+                    label="退保原因"
+                     align="center"
+                    >
+                </el-table-column>    
+                
+              <el-table-column
+                    prop="DEALER_RESULT"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="处理结果"
+                    align="center"
+                    >
+                </el-table-column>     
+                
+              <el-table-column
+                    prop="belong"
+                    min-width="170"
+                    v-bind:show-overflow-tooltip="true"
+                    label="市场部"
+                    align="center"
+                    >
+                </el-table-column>
+                
+                <el-table-column
+                    prop="policy_no"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="保单号"
+                    align="center"
+                    >
+                </el-table-column>
+                
+                <el-table-column
+                    prop="company_id"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="保险公司"
+                    align="center"
+                    >
+                     <template scope="scope">
+                    	<lz-dic-txt dic-type="COMPANY" :dic-code="scope.row.company_id"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+                    prop="satisfaction"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="满意度"
+                    align="center"
+                    >
+                     <template scope="scope">
+                    	<span>{{fmtSatisfaction(scope.row.satisfaction)}}</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+              		 fixed="right"
+                    prop="is_success"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否退保"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span v-if="scope.row.is_success == 1" style="display: block; width:100%;height:40px;line-height:40px;background-color: #58B7FF;">是</span>
+                    	<span v-if="scope.row.is_success == 0">否</span>
+                    	<span v-if="scope.row.is_success == null" style="display: block; width:100%;height:40px;line-height:40px;background-color: #FF8C69;">待处理</span>
+                	</template>
+                </el-table-column>
+                
+                <el-table-column
+              		 fixed="right"
+                    prop="REFUND_TYPE"
+                    min-width="180"
+                    v-bind:show-overflow-tooltip="true"
+                    label="退保类型"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt  dic-type="REFUND_TYPE" :dic-code="scope.row.REFUND_TYPE"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                 
+                <el-table-column
+              		 fixed="right"
+                    prop="DEALER_NAME"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="受理人员"
+                    align="center"
+                    >
+                </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+<hr style="margin:0px ;"/>
+<!---------------------------弹出详情窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="详情" size="large" top="6%" :visible.sync="detailFormVisible">
+    <el-row>
+        <el-form ref="detailForm" :model="entity" label-position="left">
+            <el-col :span="8">
+		    	<el-form-item label="姓名：">
+    				<span>{{ customerEntity.name }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+            	<el-form-item label="手机号：" label-width="80px">
+					<span>{{ customerEntity.mobile }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="区域：">
+                	<span>{{ customerEntity.province }} - {{ customerEntity.city }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+            	<el-form-item label="职业：" >
+    				<span>{{ customerEntity.duty }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+        		<el-form-item label="性别：">
+    				<lz-dic-txt dic-type="SEX" :dic-code="customerEntity.sex"></lz-dic-txt>
+        		</el-form-item>
+        	</el-col>
+    		<el-col :span="8">
+            	<el-form-item label="年龄：">
+    				<span>{{ customerEntity.age }}</span>
+        		</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="总监：">
+                	<span>{{ customerEntity.directorName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="经理：">
+                	<span>{{ customerEntity.managerName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="8">
+		    	<el-form-item label="业务员：">
+                	<span>{{ customerEntity.salerName }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+		    	<el-form-item label="质检：" >
+                	<span>{{ customerEntity.contracterName }}</span>
+            	</el-form-item>
+        	</el-col>
+        	<el-col :span="8">
+		    	<el-form-item label="客服：" >
+                	<span>{{ customerEntity.serverName }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="24">
+		    	<el-form-item label="开发备注：">
+                	<el-input type="textarea" :rows="6" size="small" placeholder="开发备注" v-model="customerEntity.upgradeRemark" ></el-input>
+            	</el-form-item>
+        	</el-col>
+        </el-form>
+        </el-row>
+        <el-row style="margin-top:10px;">
+        <el-tabs v-model="activeName" type="border-card">
+    		<el-tab-pane label="订单记录" name="apply1">
+				<el-table height="178" :data="applyData" border ref="entityTable" max-height="450px" empty-text="暂无数据" append="加载中..." :row-style="{'font-size':'13px'}" style="width: 100%">
+					<el-table-column type="index" width="30" align="center"></el-table-column>
+					<el-table-column prop="payTime" min-width="100" v-bind:show-overflow-tooltip="true" 
+						label="支付时间" align="center" sortable>
+							<template scope="scope">
+                    			<span>{{monthMinuteFormat(scope.row.payTime)}}</span>
+                			</template>
+					</el-table-column>
+					<el-table-column prop="policyholderName" min-width="70" v-bind:show-overflow-tooltip="true" 
+							label="投保人" align="center"></el-table-column>
+					<el-table-column prop="relation" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="家庭关系" align="center">
+						<template scope="scope">
+                    		<lz-dic-txt dic-type="RELATION" :dic-code="scope.row.relation"></lz-dic-txt>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="insurederName" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="被保人" align="center"></el-table-column>
+					<el-table-column prop="insurederAge" min-width="80" v-bind:show-overflow-tooltip="true" 
+						label="被保人年龄" align="center">
+						<template scope="scope">
+                    		<span>{{ageFormat(scope.row.insurederAge)}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="insuranceName" min-width="220" v-bind:show-overflow-tooltip="true" 
+						label="产品名称" align="center"></el-table-column>
+					<el-table-column prop="amount" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="缴费金额" align="center">
+						<template scope="scope">
+                    		<span>{{rmbFormat(scope.row.amount)}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="amountTerm" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="缴费年限" align="center">
+						<template scope="scope">
+                    		<span>{{yearFormat(scope.row.amountTerm)}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="insuranceLimit" min-width="80" v-bind:show-overflow-tooltip="true" 
+						label="保障额度" align="center">
+						<template scope="scope">
+                    		<span>{{rmbwFormat(scope.row.insuranceLimit)}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="policyNo" min-width="200" v-bind:show-overflow-tooltip="true" 
+						label="保单号" align="center">
+						<template scope="scope">
+                    		<span>{{scope.row.policyNo}}</span>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="belong" min-width="160" v-bind:show-overflow-tooltip="true" 
+						label="归属" align="center"></el-table-column>
+					<el-table-column prop="companyId" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="保险公司" align="center">
+						<template scope="scope">
+                    		<lz-dic-txt dic-type="COMPANY" :dic-code="scope.row.companyId"></lz-dic-txt>
+                		</template>
+					</el-table-column>
+					<el-table-column prop="isRefund" min-width="70" v-bind:show-overflow-tooltip="true" 
+						label="状态" align="center">
+						<template scope="scope">
+                    		<span v-if="scope.row.isRefund == 1" style="display: block; width:100%;height:40px;line-height:40px;background-color: #FFAEB9;">已退保</span>
+                    		<span v-if="scope.row.isRefund == 0" style="display: block; width:100%;height:40px;line-height:40px;">保障中</span>
+                		</template>
+					</el-table-column>
+				</el-table>
+			</el-tab-pane>
+  		</el-tabs>
+  		</el-row>
+    </el-dialog>
+<!---------------------------弹出详情窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="refund4jbzx.js"></script>
+</html>

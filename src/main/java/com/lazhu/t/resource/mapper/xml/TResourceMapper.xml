@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.t.resource.mapper.TResourceMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from t_resource
+		<where>
+			<if test="cm.name != null and cm.name != ''">
+				and name like concat(concat('%',#{cm.name}),'%')
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile like
+				concat(concat('%',#{cm.md5Mobile}),'%')
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+				and fuzzy_mobile like
+				concat(concat('%',#{cm.fuzzyMobile}),'%')
+			</if>
+			<if test="cm.content != null and cm.content != ''">
+				and content like concat(concat('%',#{cm.content}),'%')
+			</if>
+			<if test="cm.planName != null and cm.planName != ''">
+				and plan_name like concat(concat('%',#{cm.planName}),'%')
+			</if>
+			<if test="cm.planCode != null and cm.planCode != ''">
+				and plan_code like concat(concat('%',#{cm.planCode}),'%')
+			</if>
+			<if test="cm.sourceUrl != null and cm.sourceUrl != ''">
+				and source_url like
+				concat(concat('%',#{cm.sourceUrl}),'%')
+			</if>
+			<if test="cm.refererUrl != null and cm.refererUrl != ''">
+				and referer_url like
+				concat(concat('%',#{cm.refererUrl}),'%')
+			</if>
+			<if test="cm.userAgent != null and cm.userAgent != ''">
+				and user_agent like
+				concat(concat('%',#{cm.userAgent}),'%')
+			</if>
+			<if test="cm.executer != null and cm.executer != ''">
+				and executer like concat(concat('%',#{cm.executer}),'%')
+			</if>
+			<if test="cm.createrTime != null and cm.createrTime != ''">
+				and creater_time = #{cm.createrTime}
+			</if>
+			<if test="cm.channel != null and cm.channel != ''">
+				and channel like concat(concat('%',#{cm.channel}),'%')
+			</if>
+			<if test="cm.ip != null and cm.ip != ''">
+				and ip like concat(concat('%',#{cm.ip}),'%')
+			</if>
+			<if test="cm.smsCheck != null">
+				and sms_check = #{cm.smsCheck}
+			</if>
+			<if test="cm.sessionId != null">
+				and session_id = #{cm.sessionId}
+			</if>
+			<if test="cm.phoneStatus != null">
+				and phone_status = #{cm.phoneStatus}
+			</if>
+			<if test="cm.bizId != null">
+				and biz_id = #{cm.bizId}
+			</if>
+			<if test="cm.secretMobile != null">
+				and secret_mobile = #{cm.secretMobile}
+			</if>
+			<if test="cm.smsErrCode != null">
+				and sms_err_code = #{cm.smsErrCode}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryNewTResouce" resultType="java.lang.Long">
+		select id from t_resource
+		<where>
+			id > #{maxTId}
+			and phone_status in (-2,0,2,3)
+			and create_time &lt;
+			DATE_SUB(now(), interval 240 second)
+		</where>
+		order by id asc limit 0,10
+	</select>
+
+</mapper>

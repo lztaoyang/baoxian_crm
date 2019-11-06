@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.auditmobile.mapper.AuditMobileMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_audit_mobile
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.md5Mobile != null and cm.md5Mobile != ''">
+				and md5_mobile = #{cm.md5Mobile}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+			    and fuzzy_mobile like concat(concat('%',#{cm.fuzzyMobile}),'%')
+			</if>
+			<if test="cm.describe != null and cm.describe != ''">
+			    and describe like concat(concat('%',#{cm.describe}),'%')
+			</if>
+			<if test="cm.applicantId != null and cm.applicantId != ''">
+				and applicant_id = #{cm.applicantId}
+			</if>
+			<if test="cm.applicantName != null and cm.applicantName != ''">
+			    and applicant_name like concat(concat('%',#{cm.applicantName}),'%')
+			</if>
+			<if test="cm.applyReason != null and cm.applyReason != ''">
+			    and apply_reason like concat(concat('%',#{cm.applyReason}),'%')
+			</if>
+			<if test="cm.auditReason != null and cm.auditReason != ''">
+			    and audit_reason like concat(concat('%',#{cm.auditReason}),'%')
+			</if>
+			<if test="cm.auditTime != null and cm.auditTime != ''">
+				and audit_time = #{cm.auditTime}
+			</if>
+			<if test="cm.auditId != null and cm.auditId != ''">
+				and audit_id = #{cm.auditId}
+			</if>
+			<if test="cm.auditName != null and cm.auditName != ''">
+			    and audit_name like concat(concat('%',#{cm.auditName}),'%')
+			</if>
+			<if test="cm.status != null and cm.status != ''">
+				and status = #{cm.status}
+			</if>
+		</where>
+	</select>
+	<select id="queryPassTime"  resultType="java.lang.Long">
+		select id from crm_audit_mobile where  status = 1 and  NOW() > DATE_ADD(audit_time, INTERVAL 1 DAY)
+	</select>
+</mapper>

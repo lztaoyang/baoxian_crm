@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>市场部异常工作轨迹表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 10px 10px;">
+        <el-col :span="8">
+            <strong>市场部异常工作轨迹表管理</strong>
+        </el-col>
+        <el-col :span="16">
+            <el-breadcrumb separator="/" style="float:right">
+                <el-breadcrumb-item>首页</el-breadcrumb-item>
+                <el-breadcrumb-item>市场部异常工作轨迹表管理</el-breadcrumb-item>
+            </el-breadcrumb>
+        </el-col>
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <el-collapse accordion>
+        <el-collapse-item title="查询面板[点击展开]">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+	    		<el-form-item label="经纪人ID" style="font-size: 13px;" prop="salerId">
+		    		<el-input size="small" v-model="searchParams.salerId" placeholder="经纪人ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="经理ID" style="font-size: 13px;" prop="managerId">
+		    		<el-input size="small" v-model="searchParams.managerId" placeholder="经理ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="总监ID" style="font-size: 13px;" prop="directorId">
+		    		<el-input size="small" v-model="searchParams.directorId" placeholder="总监ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="总经理ID" style="font-size: 13px;" prop="ministerId">
+		    		<el-input size="small" v-model="searchParams.ministerId" placeholder="总经理ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="客户ID" style="font-size: 13px;" prop="customerId">
+		    		<el-input size="small" v-model="searchParams.customerId" placeholder="客户ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="通话记录ID" style="font-size: 13px;" prop="salerRecordId">
+		    		<el-input size="small" v-model="searchParams.salerRecordId" placeholder="通话记录ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="前流程ID" style="font-size: 13px;" prop="beforeFlowId">
+		    		<el-input size="small" v-model="searchParams.beforeFlowId" placeholder="前流程ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="后流程ID" style="font-size: 13px;" prop="afterFlowId">
+		    		<el-input size="small" v-model="searchParams.afterFlowId" placeholder="后流程ID" ></el-input>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </el-collapse-item>
+    </el-collapse>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  stripe
+                  max-height="450px"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+        >
+            <el-table-column
+                    type="selection"
+                    prop="id"
+            >
+            </el-table-column>
+            
+            <el-table-column
+                    prop="salerId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="经纪人ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="经理ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="总监ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="ministerId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="总经理ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="customerId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="salerRecordId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="通话记录ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="beforeFlowId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="前流程ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="afterFlowId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="后流程ID"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="170">
+                <template scope="scope">
+                    <el-button-group size="small">
+                        <el-button size="small" type="warning" @click="showEditDialog(scope.row.id)">编辑</el-button>
+                        <el-button size="small" type="danger" @click="del(scope.row.id)">删除</el-button>
+                        <el-button size="small" type="primary" @click="readDetail(scope.row.id)">详情</el-button>
+                    </el-button-group>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="8">
+            <el-button size="small" type="info" @click="showAddDialog">新增</el-button>
+            <el-button size="small" type="danger" @click="delBatch">批量删除</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+<!---------------------------弹出编辑窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="entity.id?'编辑':'新增'" :visible.sync="editFormVisible" :size="typeof(_win._dialog_size)!='undefined'?_win._dialog_size:small">
+        <el-form ref="editForm" :model="entity" :rules="rules">
+        <el-input size="small" v-model="entity.id" v-show="false" ></el-input>
+    	<el-col :span="12">
+        <el-form-item label="经纪人ID" label-width="100px" prop="salerId">
+    		<el-input type="number" size="small" v-model="entity.salerId" placeholder="经纪人ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="经理ID" label-width="100px" prop="managerId">
+    		<el-input type="number" size="small" v-model="entity.managerId" placeholder="经理ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="总监ID" label-width="100px" prop="directorId">
+    		<el-input type="number" size="small" v-model="entity.directorId" placeholder="总监ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="总经理ID" label-width="100px" prop="ministerId">
+    		<el-input type="number" size="small" v-model="entity.ministerId" placeholder="总经理ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="客户ID" label-width="100px" prop="customerId">
+    		<el-input type="number" size="small" v-model="entity.customerId" placeholder="客户ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="通话记录ID" label-width="100px" prop="salerRecordId">
+    		<el-input type="number" size="small" v-model="entity.salerRecordId" placeholder="通话记录ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="前流程ID" label-width="100px" prop="beforeFlowId">
+    		<el-input type="number" size="small" v-model="entity.beforeFlowId" placeholder="前流程ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="12">
+        <el-form-item label="后流程ID" label-width="100px" prop="afterFlowId">
+    		<el-input type="number" size="small" v-model="entity.afterFlowId" placeholder="后流程ID" ></el-input>
+        </el-form-item>
+        </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="editFormVisible = false">取 消</el-button>
+            <el-button size="small" type="info"  @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+<!---------------------------弹出详情窗口 开始----------------------------------------------------------------------->
+    <el-dialog title="详情" :visible.sync="detailFormVisible" :size="typeof(_win._dialog_size)!='undefined'?_win._dialog_size:small">
+        <el-form ref="detailForm" :model="entity" label-position="left">
+            <el-col :span="12">
+		    	<el-form-item label="经纪人ID">
+                	<span>{{ entity.salerId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="经理ID">
+                	<span>{{ entity.managerId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="总监ID">
+                	<span>{{ entity.directorId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="总经理ID">
+                	<span>{{ entity.ministerId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="客户ID">
+                	<span>{{ entity.customerId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="通话记录ID">
+                	<span>{{ entity.salerRecordId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="前流程ID">
+                	<span>{{ entity.beforeFlowId }}</span>
+            	</el-form-item>
+        	</el-col>
+            <el-col :span="12">
+		    	<el-form-item label="后流程ID">
+                	<span>{{ entity.afterFlowId }}</span>
+            	</el-form-item>
+        	</el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="detailFormVisible = false">关闭</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出详情窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="/js/model/workTrailAbnormal_index.js"></script>
+</html>

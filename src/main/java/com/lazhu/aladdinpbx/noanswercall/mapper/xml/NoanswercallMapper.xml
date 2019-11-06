@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.aladdinpbx.noanswercall.mapper.NoanswercallMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from aladdinpbx_noanswercall
+		<where>
+			<if test="cm.nasId != null and cm.nasId != ''">
+			    and NAS_ID = #{cm.nasId})
+			</if>
+			<if test="cm.nasCallederid != null and cm.nasCallederid != ''">
+			    and NAS_CALLEDERID = #{cm.nasCallederid})
+			</if>
+			<if test="cm.nasExtnumber != null and cm.nasExtnumber != ''">
+			    and NAS_EXTNUMBER = #{cm.nasExtnumber})
+			</if>
+			<if test="cm.nasStarttime != null and cm.nasStarttime != ''">
+				and TO_DAYS(NAS_STARTTIME) = TO_DAYS(#{cm.nasStarttime})
+			</if>
+			<if test="cm.nasEndtime != null and cm.nasEndtime != ''">
+				and TO_DAYS(NAS_ENDTIME) = TO_DAYS(#{cm.nasEndtime})
+			</if>
+			<if test="cm.nasLength != null and cm.nasLength != ''">
+				and NAS_LENGTH = #{cm.nasLength}
+			</if>
+			<if test="cm.nasDeal != null and cm.nasDeal != ''">
+			    and NAS_DEAL like = #{cm.nasDeal})
+			</if>
+			<if test="cm.nasPhonenumber != null and cm.nasPhonenumber != ''">
+			    and NAS_PHONENUMBER = #{cm.nasPhonenumber}
+			</if>
+			<if test="cm.nasWaitelength != null and cm.nasWaitelength != ''">
+				and NAS_WAITELENGTH = #{cm.nasWaitelength}
+			</if>
+			<if test="cm.nasAgentid != null and cm.nasAgentid != ''">
+			    and NAS_AGENTID = #{cm.nasAgentid}
+			</if>
+			<if test="cm.nasPbxip != null and cm.nasPbxip != ''">
+			    and NAS_PBXIP = #{cm.nasPbxip}
+			</if>
+			<if test="cm.nasRinglength != null and cm.nasRinglength != ''">
+			    and NAS_RINGLENGTH = #{cm.nasRinglength}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByMaxId" resultType="java.lang.Long">
+		select id from aladdinpbx_noanswercall where id > #{noanswerMaxId} order by id limit 10
+	</select>
+
+</mapper>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!-- <script src="/js/lib/jquery.min.1.12.4.js"></script> -->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 10px 10px;">
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+	    		<el-form-item label="所属总监" style="font-size: 13px;" prop="directorId">
+		    		<lz-dic-select style="width:100px" dic-type="DIRECTOR" v-model="searchParams.directorId"></lz-dic-select>
+		    	</el-form-item>
+	    		<el-form-item label="所属经理" style="font-size: 13px;" prop="managerId">
+		    		<lz-dic-select style="width:100px" dic-type="MANAGER" v-model="searchParams.managerId"></lz-dic-select>
+		    	</el-form-item>
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            <el-table-column type="index" width="30" align="center"></el-table-column>
+            
+            <el-table-column
+                    prop="userName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="用户名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="todayAddChatNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日已添加微信"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="todayDisposedNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日意向资源"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="todayChatNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日可聊资源"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="yesterdayAddChatNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="昨天已添加微信"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="yesterdayNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="昨天意向资源"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="yesterdayChatNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="昨天可聊资源"
+                    align="center"
+                    >
+                </el-table-column>
+                
+          <!--   <el-table-column
+                    prop="vorgesternNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="前天意向资源"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="vorgesternChatNum"
+                    min-width="150"
+                    v-bind:show-overflow-tooltip="true"
+                    label="前天可聊资源"
+                    align="center"
+                    >
+                </el-table-column> -->
+            
+        </el-table>
+    </el-row>
+</div>
+</body>
+<script type="text/javascript">
+var vuePage = new Vue({
+    el: '#app',
+    data: {
+    	sourceUrl:"crm/developDayCall",
+    	//查询参数
+        searchParams: {directorId:'',managerId:''},
+        //分页数据,其中包含分页信息与数据列表
+        pageData: {},
+    },
+    created: function () {
+        var self = this;
+        self.readList();
+    },
+    methods: {
+        //查询
+        readList: function () {
+            var params = {
+            	asc: false,
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 10)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchParams) {
+            	if (typeof this.searchParams[item] == 'boolean'){
+                    params[item] = this.searchParams[item];
+                }else if (this.searchParams[item] != "") {
+                    params[item] = this.searchParams[item];
+                }
+            }
+            this.$http.put(this.sourceUrl+'/read/developList', params)
+                    .then(function (response) {
+                        this.pageData = response.data;
+                    });
+        },
+        
+    }
+});
+</script>
+</html>

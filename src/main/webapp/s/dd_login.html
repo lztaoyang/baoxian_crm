@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="ie-comp|ie-stand">
+    <title>国诚客户管理系统</title>
+    <link rel="icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+</head>
+<body>
+	<div>
+		<button type="button" onclick="returnLoginHtml()">返回登录页</button>
+	</div>
+    <script type="text/javascript">
+    	var dingId = "";
+		function returnLoginHtml() {
+			window.location.href = "/s/login.html";
+	    }
+		function GetRequest() {
+			var url = location.search; //获取url中"?"符后的字串
+			var theRequest = new Object();
+			if (url.indexOf("?") != -1) {
+				var str = url.substr(1);
+				strs = str.split("&");
+				for(var i = 0; i < strs.length; i ++) {
+					theRequest[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]);
+				}
+			}
+			console.log(theRequest);
+
+			var match = {
+	                code: theRequest.code,
+	            };
+			$.ajax({
+                type: 'post',
+                contentType: "application/json",
+                url: "/dd/login",
+                cache: false,
+                async: false,
+                dataType: 'json',
+                data: JSON.stringify(match),
+                success: function(result) {
+                	if (result.httpCode == "200") {
+                        window.location.href = "/s/index.html";
+                    } else {
+                    	if (result.msg && result.msg != "") {
+	                        alert(result.msg.replace("[{}]", ""));
+						} else {
+							alert("登陆异常！");
+						}
+                    	window.location.href = "/s/login.html";
+                    }
+                },
+            });
+	    }
+	    window.onload = function() {
+	    	GetRequest();
+	    }
+    </script>
+</body>
+</html>

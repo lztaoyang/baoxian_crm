@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<title>客户统计报表</title>
+	<!-- 引入样式 -->
+	<link rel="stylesheet" href="/css/eui.1.3.0.css">
+	<link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+	<link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+	<!--<link rel="stylesheet" href="css/docs.css">-->
+	<!--<script src="js/jquery.min.1.12.4.js"></script>-->
+	<script src="/js/lib/vue.2.3.2.js"></script>
+	<script src="/js/lib/vuex.2.3.1.js"></script>
+	<script src="/js/lib/vue-resource.1.3.1.js"></script>
+	<script src="/js/lib/eui.1.3.0.js"></script>
+	<script src="/js/lib/vue-html5-editor.js"></script>
+	<script src="/js/lib/common.js"></script>
+	<script src="/js/lib/vue-component-dic.js"></script>
+</head>
+
+<body>
+	<div id="app">
+		<!---------------------------查询面板 开始----------------------------------------------------------------------->
+		<el-row style="margin:10px 10px 0px 10px;">
+		<el-form :inline="true" :model="searchParams" label-position="left" label-width="80px" style="margin-bottom: 0px">
+			<div>
+				<el-form-item label="维度" style="font-size: 13px;" prop="dimension">
+					<lz-dic-select style="width:150px" dic-type="DIMENSION" v-model="searchParams.dimension"></lz-dic-select>
+				</el-form-item>
+				<el-form-item label="推广渠道" prop="channel">
+					<lz-dic-select style="width:150px" dic-type="RESOURCE_CHANNEL1" v-model="searchParams.channel"></lz-dic-select>
+				</el-form-item>
+				<el-form-item label="执行人" prop="executer">
+					<lz-dic-select style="width:150px;" dic-type="RESOURCE_OP1" v-model="searchParams.executer"></lz-dic-select>
+				</el-form-item>
+				<el-form-item label="时段" prop="timeslot">
+					<lz-dic-select style="width:150px" dic-type="TIMESLOT" v-model="searchParams.timeslot"></lz-dic-select>
+				</el-form-item>
+			</div>
+			<div>
+				<!-- <el-form-item label="年龄" prop="age">
+					<el-input style="width:150px;" type="number" placeholder="请输入年龄" v-model="searchParams.age" clearable></el-input>
+				</el-form-item> -->
+				<el-form-item label="省份" prop="province">
+					<el-input style="width:150px;" placeholder="请输入省份" v-model="searchParams.province" clearable> </el-input>
+				</el-form-item>
+				<el-form-item label="城市" prop="city">
+					<el-input style="width:150px;" placeholder="请输入城市" v-model="searchParams.city" clearable> </el-input>
+				</el-form-item>
+				<!-- <el-form-item label="性别" prop="sex">
+					<lz-dic-select style="width:150px;" dic-type="SEX" v-model="searchParams.sex"></lz-dic-select>
+				</el-form-item> -->
+				<el-form-item label="开始时间" prop="startDate" style="width:230px">
+					<el-date-picker style="width:150px" v-model="searchParams.startDate" @change="dayFormat1" align="right" type="date" placeholder="选择开始日期" :picker-options="pickerDate" value-format="yyyy-MM-dd">
+					</el-date-picker>
+				</el-form-item>
+				<el-form-item label="结束时间" prop="endDate" style="width:230px">
+					<el-date-picker style="width:150px" v-model="searchParams.endDate" @change="dayFormat2" align="right" type="date" placeholder="选择结束日期" :picker-options="pickerDate" value-format="yyyy-MM-dd">
+					</el-date-picker>
+				</el-form-item>
+				<el-form-item>
+					<el-button size="small" type="info" @click="readList">查询</el-button>
+				</el-form-item>
+			</div>
+		</el-form>
+		</el-row>
+		<!---------------------------查询面板 结束----------------------------------------------------------------------->
+		<!---------------------------数据表格 开始----------------------------------------------------------------------->
+		<el-row style="margin:10px 10px 0px 10px;">
+			<el-table id="dataList" :data="pageData.data" border height="456" append="加载中..." style="width: 100%">
+
+				<el-table-column prop="dimension" min-width="100" v-bind:show-overflow-tooltip="true" align="center" label="维度">
+					<template scope="scope">
+						<span>
+                   	{{dimensionFormat(scope.row.dimension)}}</span>
+					</template>
+				</el-table-column>
+				
+				<el-table-column prop="customerNum" min-width="100" v-bind:show-overflow-tooltip="true" align="center" label="客户数">
+				</el-table-column>
+
+				<el-table-column prop="orderNum" min-width="100" v-bind:show-overflow-tooltip="true" align="center" label="订单数">
+				</el-table-column>
+
+				<el-table-column prop="insureMoney" min-width="100" v-bind:show-overflow-tooltip="true" align="center" label="总服务费">
+				</el-table-column>
+				
+				<!-- <el-table-column prop="costMoney" min-width="100" v-bind:show-overflow-tooltip="true" align="center" label="总推广支出">
+				</el-table-column> -->
+			</el-table>
+		</el-row>
+		<!-- 表尾 开始-->
+		<!---------------------------弹出详情窗口 结束----------------------------------------------------------------------->
+	</div>
+</body>
+<script src="/business/customer/customerCount.js"></script>
+
+</html>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.customeractualcot.mapper.CustomerActualCotMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_customer_actual_cot
+		<where>
+				and enable_ = 1
+			<if test="cm.customerAdviserRecordId != null and cm.customerAdviserRecordId != ''">
+				and customer_adviser_record_id = #{cm.customerAdviserRecordId}
+			</if>
+			<if test="cm.directiveId != null and cm.directiveId != ''">
+				and directive_id = #{cm.directiveId}
+			</if>
+			<if test="cm.servicerId != null and cm.servicerId != ''">
+				and servicer_id = #{cm.servicerId}
+			</if>
+			<if test="cm.servicerName != null and cm.servicerName != ''">
+			    and servicer_name like concat(concat('%',#{cm.servicerName}),'%')
+			</if>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.stockCode != null and cm.stockCode != ''">
+			    and stock_code like concat(concat('%',#{cm.stockCode}),'%')
+			</if>
+			<if test="cm.stockName != null and cm.stockName != ''">
+			    and stock_name like concat(concat('%',#{cm.stockName}),'%')
+			</if>
+			<if test="cm.stockSourceType != null and cm.stockSourceType != ''">
+				and stock_source_type = #{cm.stockSourceType}
+			</if>
+			<if test="cm.cotNum != null and cm.cotNum != ''">
+				and cot_num = #{cm.cotNum}
+			</if>
+			<if test="cm.cotPrice != null and cm.cotPrice != ''">
+				and cot_price = #{cm.cotPrice}
+			</if>
+			<if test="cm.cotMoney != null and cm.cotMoney != ''">
+				and cot_money = #{cm.cotMoney}
+			</if>
+			<if test="cm.currentPrice != null and cm.currentPrice != ''">
+				and current_price = #{cm.currentPrice}
+			</if>
+			<if test="cm.currentMoney != null and cm.currentMoney != ''">
+				and current_money = #{cm.currentMoney}
+			</if>
+			<if test="cm.lossPatio != null and cm.lossPatio != ''">
+				and loss_patio = #{cm.lossPatio}
+			</if>
+			<if test="cm.lossMoney != null and cm.lossMoney != ''">
+				and loss_money = #{cm.lossMoney}
+			</if>
+			<if test="cm.position != null and cm.position != ''">
+				and position = #{cm.position}
+			</if>
+			<if test="cm.indexValue != null and cm.indexValue != ''">
+				and index_value = #{cm.indexValue}
+			</if>
+			<if test="cm.updateDate != null and cm.updateDate != ''">
+				and DATE_FORMAT(update_time,'%Y-%m-%d') = #{cm.updateDate}
+			</if>
+			<if test="cm.startDate != null and cm.startDate != ''">
+				and create_time &gt;= #{cm.startDate}
+			</if>
+			<if test="cm.endDate != null and cm.endDate != ''">
+				and update_time &lt;= #{cm.endDate}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByStockCode" resultType="java.lang.Long">
+		select id from crm_customer_actual_cot where stock_code = #{stockCode} and customer_id = #{customerId} and enable_ = 1
+	</select>
+	
+	<select id="queryAll" resultType="java.lang.Long">
+		select id from crm_customer_actual_cot where enable_ = 1
+	</select>
+	
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+		select id from crm_customer_actual_cot where customer_id = #{customerId} and enable_ = 1
+	</select>
+	
+	<select id="queryGroupStock"  resultType="java.util.Map">
+		SELECT
+			*
+		FROM
+			(select  
+				stock_code as stockCode,
+				stock_name as stockName,
+				current_price as currentPrice,
+				create_time as createTime,
+				update_time as updateTime,
+				sum(cot_num) as cotNum,
+				sum(cot_money) as cotMoney,
+				IFNULL(round(sum(cot_money)/sum(cot_num),2),0) as cotPrice,
+				current_price * sum(cot_num) as currentMoney,
+				(current_price * sum(cot_num) - sum(cot_money)) as lossMoney,
+				sum(loss_money &gt; 0) as payCount,
+				sum(loss_money &lt; 0) as lossCount,
+				IFNULL(round((current_price - sum(cot_money) / sum(cot_num)) / (sum(cot_money) / sum(cot_num)) * 100,2),0) AS lossPatio
+			from crm_customer_actual_cot
+			<where>
+					and enable_ = 1
+				<if test="cm.stockCode != null and cm.stockCode != ''">
+			    	and stock_code like concat(concat('%',#{cm.stockCode}),'%')
+				</if>
+				<if test="cm.stockName != null and cm.stockName != ''">
+				    and stock_name like concat(concat('%',#{cm.stockName}),'%')
+				</if>
+				<if test="cm.servicerId != null and cm.servicerId != ''">
+					and servicer_id = #{cm.servicerId}
+				</if>
+				<if test="cm.servicerName != null and cm.servicerName != ''">
+				    and servicer_name like concat(concat('%',#{cm.servicerName}),'%')
+				</if>
+			</where>
+			group by stock_code
+			order by cotNum desc
+		)  t1
+	</select>
+</mapper>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <script src="/js/excel/xlsx.full.min.js"></script>
+	<style type="text/css">
+	  .el-table .bh-row .el-table_1_column_4{
+	    background: red;
+	  }
+	  .el-table .success-row .el-table_1_column_4{
+	    background: #50BFFF;
+	  }
+	   .el-table .refund-row {
+	    background: #FFC1C1;
+	  }
+</style>
+</head>
+<body>
+<div id="app">
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+    	<el-row style="margin:10px 10px 0px 10px;">
+            <el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+            	<el-row>
+		    		<el-form-item label="客户姓名" style="font-size: 13px;" prop="customerName">
+			    		<el-input style="width:100px;" size="small" style="width:100px" v-model="searchParams.customerName" placeholder="客户姓名" ></el-input>
+			    	</el-form-item>
+		    		<el-form-item label="手机号码" style="font-size: 13px;" prop="mobile">
+			    		<el-input style="width:100px;" size="small" style="width:100px" v-model="searchParams.mobile" placeholder="手机号" ></el-input>
+			    	</el-form-item>
+		    		<el-form-item label="来源渠道" style="font-size: 13px;" prop="fromInfo">
+			    		<lz-dic-select style="width:120px" dic-type="RESOURCE_CHANNEL" v-model="searchParams.fromInfo"></lz-dic-select>
+			    	</el-form-item>
+			    	<el-form-item label="签单次数" style="font-size: 13px;" prop="insureNum">
+			    		<lz-dic-select style="width:100px;" dic-type="INSURENUM" v-model="searchParams.insureNum"></lz-dic-select>
+			    	</el-form-item>
+			    	<el-form-item label="产品名称" style="font-size: 13px;" prop="insuranceId">
+			    		<lz-dic-select  dic-type="PRODUCT" style="width:100px;" v-model="searchParams.insuranceId"></lz-dic-select>
+			    	</el-form-item>
+		    	</el-row>
+		    	<el-row>
+			    	<el-form-item label="审核开始日期" style="font-size: 13px;" prop="auditTime1">
+			    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat3" v-model="searchParams.auditTime1"></el-date-picker>
+			    	</el-form-item>
+					<el-form-item label="审核结束日期" style="font-size: 13px;" prop="auditTime2">
+			    		<el-date-picker type="date" size="small" placeholder="选择日期" @change="dayFormat4" v-model="searchParams.auditTime2"></el-date-picker>
+			    	</el-form-item>
+			    	<el-form-item label="所属经理" style="font-size: 13px;" prop="managerId">
+			    		<lz-dic-select style="width:100px;" dic-type="MANAGER" v-model="searchParams.managerId"></lz-dic-select>
+			    	</el-form-item>
+			    	<el-form-item label="所有人" style="font-size: 13px;" prop="subordinate">
+			    		<lz-dic-select style="width:100px;" dic-type="SUBORDINATES" v-model="searchParams.subordinate"></lz-dic-select>
+			    	</el-form-item>
+			    	<el-form-item label="签单状态" style="font-size: 13px;" prop="signStatus">
+			    		<lz-dic-select style="width:100px;" dic-type="SIGNSTATUS" v-model="searchParams.signStatus"></lz-dic-select>
+			    	</el-form-item>
+	                <el-form-item>
+	                    <el-button size="small" type="info" @click="readList">查询</el-button>
+	                </el-form-item>
+                </el-row>
+            </el-form>
+        </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+				  :row-class-name="tableRowClassName"
+				  @row-dblclick="readDetail"
+        >
+                
+            <el-table-column
+            		fixed="left"
+                    prop="salerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    fixed="left"
+                    prop="insuranceId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="产品名称"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="ALLPRODUCT" :dic-code="scope.row.insuranceId"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+            		fixed="left"
+                    prop="amount"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="缴费金额"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="signStatus"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单状态"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="SIGNSTATUS" :dic-code="scope.row.signStatus"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="createTime"
+                    min-width="110"
+                    v-bind:show-overflow-tooltip="true"
+                    label="签单时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="customerName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户手机"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="belong"
+                    min-width="180"
+                    v-bind:show-overflow-tooltip="true"
+                    label="市场部归属"
+                    align="center"
+                    >
+                </el-table-column>
+                
+            <el-table-column
+                    prop="fromInfo"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源渠道"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="RESOURCE_CHANNEL" :dic-code="scope.row.fromInfo"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="auditReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="审核意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="complianceReason"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="合规意见"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="开始时间"
+                    align="center"
+                    v-if="notServer"
+                    >
+                    <template scope="scope">
+                    	<span>{{birthdayFormat(scope.row.startDate)}}</span>
+                	</template>
+                </el-table-column>
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="结束时间"
+                    align="center"
+                    v-if="notServer"
+                    >
+                    <template scope="scope">
+                    	<span>{{birthdayFormat(scope.row.endDate)}}</span>
+                	</template>
+                </el-table-column>
+            <el-table-column
+            		fixed="right"
+                    prop="submitCode"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="微信记录"
+                    align="center"
+                    v-if="notServer"
+                    >
+                    <template scope="scope">
+                    	<a target="_blank" :href="scope.row.submitCode">{{weChatChatExist(scope.row.submitCode)}}</a>
+                	</template>
+                </el-table-column>
+            <el-table-column
+            		fixed="right"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="操作"
+                    align="center"
+                    v-if="notServer"
+                    >
+                    <template scope="scope">
+                    	<el-button size="small" type="info" v-if="isAduit(scope.row.signStatus)" @click="changeServer(scope.row.id);">修改服务日期</el-button>
+                	</template>
+                </el-table-column>
+			
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+
+	<!-- 修改服务日期 开始 -->
+    <el-dialog title="修改服务日期" :visible.sync="changeVisible">
+        <el-form :model="entity" >
+       		<el-input size="small" v-model="entity.id" v-show="false"></el-input>
+       		<el-input size="small" v-model="entity.customerId" v-show="false"></el-input>
+	    	<el-col :span="12">
+		        <el-form-item label="开始时间:" label-width="100px" prop="startDate">
+		    		<el-date-picker type="date" size="small" v-model="entity.startDate" placeholder="开始时间" ></el-date-picker>
+		        </el-form-item>
+	        </el-col>
+	    	<el-col :span="12">
+		        <el-form-item label="结束时间:" label-width="100px" prop="endDate">
+			    	<el-date-picker type="date" size="small" placeholder="结束时间" v-model="entity.endDate" ></el-date-picker>
+			    </el-form-item>
+	        </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+	    		<el-button size="small" @click="changeVisible = false">取 消</el-button>
+	            <el-button size="small" type="info" @click="changeSave">保 存</el-button>
+	    </div> 
+    </el-dialog>
+	<!-- 修改服务日期 结束 -->
+
+
+</div>
+</body>
+<script src="/business/signApply/signApply.js"></script>
+</html>

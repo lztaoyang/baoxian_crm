@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link rel="stylesheet" href="/css/table-style.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+    <script src="/js/lib/jquery.min.1.12.4.js"></script>
+    
+    <link rel="stylesheet" href="/css/default.css">
+    <style type="text/css">
+    	hr {
+    		margin-top:0;
+		    border: 1px solid #FFF;
+		}
+		.bg-purple {
+		background: #d3dce6;
+		}
+		.grid-content {
+			border-radius: 4px;
+			min-height: 36px;
+		}
+		.tapInfo{ animation: change 5s  ease-in  infinite ; font-size: 12px; color:	#EE9572; font-weight: bold}  
+		@keyframes change {  
+			0%{ text-shadow: 0 0 4px #EE6AA7}  
+			50%{ text-shadow: 0 0 10px #9BCD9B}  
+			100%{ text-shadow: 0 0 4px #9F79EE}  
+		}
+    </style>
+</head>
+<body>
+<div id="app">
+<div class="wrapper preload">
+            <section class="grid-unit top-left">
+				<el-row justify="center">
+					<el-col :span="24">
+			    	<el-form ref="applyForm" :model="userEntity" :rules="userRules" >
+				        <el-input size="small" v-model="userEntity.id" v-show="false" ></el-input>
+				        <el-col :span="24">
+				        	<el-form-item label-width="30px">
+								<span style="color:blue;font-size:20px;line-height: 20px;">{{user.userName}}</span>
+								<span style="font-size:20px;" v-if="existAgentNo">【{{user.agentNo}}】</span>
+				            </el-form-item>
+					        <hr />
+				        </el-col>
+				        <el-col :span="24">
+				        	<el-form-item label="密码：" label-width="100px" prop="password">
+				        		<el-input style="width:160px;" size="small" v-model="userEntity.password" placeholder="新密码"></el-input>
+				        	</el-form-item>
+				        </el-col>
+				        <el-col :span="24">
+				        	<el-form-item label="钉钉ID：" label-width="100px" prop="dingId">
+				        		<el-input style="width:160px;" size="small" v-model="userEntity.dingId" placeholder="钉钉ID"></el-input>
+				        		<i class="tapInfo" @click="dingIdPng" style="color:#F08080;">（点我查询）</i>
+				        	</el-form-item>
+				        </el-col>
+				         <el-col :span="24">
+				        	<el-form-item label="分机号：" label-width="100px" prop="agentNo">
+				        		<el-input style="width:160px;" size="small" v-model="userEntity.agentNo" placeholder="分机号"></el-input>
+				        	</el-form-item>
+				        </el-col>
+				        <el-col :span="12">
+				        	<el-row style="margin-top:10px;" type="flex" justify="center">
+					        	<el-button size="small" type="info"  @click="change">保存修改</el-button>
+				        	</el-row>
+				        </el-col>
+			        </el-form>
+			        </el-col>
+			    </el-row>
+            </section>
+            <section class="grid-unit top-right">
+                <el-row type="flex" justify="space-around" style="top:26%;">
+					<el-col :span="12" style="padding:20px 0 20px 0;background: #F5F5F5;height:150px;width:210px;border: 1px solid #20A0FF;border-radius: 6px;">
+						<el-form :inline="true" :model="searchParams" label-position="right">
+						 <el-row>
+							<el-form-item label="姓名" label-width="60px" style="font-size: 13px;" prop="name">
+						 		<el-input style="width:120px;" size="small" v-model="searchParams.name" placeholder="客户姓名" ></el-input>
+						 	</el-form-item>
+						 </el-row>
+						 <el-row>
+						 	<el-form-item label="号码" label-width="60px" style="font-size: 13px;" prop="mobile">
+						 		<el-input style="width:120px;" size="small" v-model="searchParams.mobile" placeholder="电话号码" ></el-input>
+						 	</el-form-item>
+						 </el-row>
+						 <el-row>
+						         <div style="float:left;margin:6px 0px 0px 65px" @click="searchList">
+						             <el-tag type="primary" color="#20a0ff" style="color:#FFF;">成交客户搜索</el-tag>
+						         </div>
+						     </el-row>
+						</el-form>
+					</el-col>
+					<el-col :span="12" style="padding:20px 0 20px 0;background: #F5F5F5;height:150px;width:210px;border: 1px solid #13CE66;border-radius: 6px;">
+						<el-form :inline="true" :model="searchResourceParams" label-position="right">
+						 <el-row>
+						 	<el-form-item label="姓名" label-width="60px" style="font-size: 13px;" prop="name">
+						 		<el-input style="width:120px;" size="small" v-model="searchResourceParams.name" placeholder="客户姓名" ></el-input>
+						 	</el-form-item>
+						 </el-row>
+						 <el-row>
+						 	<el-form-item label="号码" label-width="60px" style="font-size: 13px;" prop="mobile">
+						 		<el-input style="width:120px;" size="small" v-model="searchResourceParams.mobile" placeholder="电话号码" ></el-input>
+						 	</el-form-item>
+						 </el-row>
+						 <el-row>
+						         <div style="float:left;margin:6px 0px 0px 65px" @click="searchResourceList">
+								<el-tag type="success" color="#13ce66" style="color:#FFF;">开发资源搜索</el-tag>
+							</div>
+						</el-row>
+						</el-form>
+					</el-col>
+				</el-row>
+            </section>
+            <section class="grid-unit bottom-left" v-show="isSaler">
+                <el-row style="top:20%;">
+					<el-row type="flex" justify="space-around" style="line-height:3;text-align:center;">
+						<el-col :span="6"><div class="grid-content bg-purple">当前已分配：{{userEntity.allotResourceNum}}个</div></el-col>
+						<el-col :span="6"><div class="grid-content bg-purple">最大分配数：{{userEntity.allotResourceMax}}个</div></el-col>
+						<el-col :span="6"><div class="grid-content bg-purple">奖励资源数：{{userEntity.rewardResourceNum}}个</div></el-col>
+					</el-row>
+					<el-row type="flex" justify="space-around" style="margin-top:30px;">
+						<el-button :plain="isAllotPlain(userEntity.isAllotResource)" type="success" @click="isAllot(userEntity.id,userEntity.isAllotResource)">{{ isAllotFormat(userEntity.isAllotResource) }}</el-button>
+					</el-row>
+					<el-row type="flex" justify="center">
+						 <el-col :span="21" style="margin-top:60px;color:#FF6347">
+							{{ resourceInitNum }}
+						 </el-col>
+					</el-row>
+				</el-row>
+            </section>
+            <!-- <section class="grid-unit bottom-right">
+                
+            </section> -->
+    </div>
+<!---------------------------弹出全局搜索窗口 开始----------------------------------------------------------------------->
+<el-dialog size="large" :visible.sync="searchVisible">
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="searchPageData.data"
+                  ref="entityTable"
+                  highlight-current-row
+                  border
+                  max-height="536"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            <el-table-column type="index" width="50" align="center"></el-table-column>
+            
+            <el-table-column
+                    prop="enterTime"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="入库时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{minuteFormat(scope.row.enterTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="salerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属总监"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="serverName"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属客服"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="isUpgrade"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否升级"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="YESORNO" :dic-code="scope.row.isUpgrade"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+                
+            <el-table-column
+                    prop="upgradeFlow"
+                    min-width="80"
+                    v-bind:show-overflow-tooltip="true"
+                    label="升级流程"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="UPGRADEFLOWS" :dic-code="scope.row.upgradeFlow"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            <el-table-column
+                    prop="upgraderName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="升级归属"
+                    align="center"
+                    >
+                </el-table-column>
+            <el-table-column
+                    prop="upgradeManagerName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="升级经理"
+                    align="center"
+                    >
+                </el-table-column>
+                
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="searchPageData.current"
+                           :page-sizes="[5, 20, 50]"
+                           :page-size="searchPageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="searchPageData.iTotalRecords"
+                           @size-change="searchList"
+                           @current-change="searchList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+</el-dialog>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+<!---------------------------弹出全局搜索窗口 开始----------------------------------------------------------------------->
+<el-dialog size="large" :visible.sync="searchResourceVisible">
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px">
+        <el-table id="12324"
+                  :data="searchResourcePageData.data"
+                  ref="entityTable"
+                  highlight-current-row
+                  border
+                  max-height="536"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            <el-table-column type="index" width="50" align="center"></el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="140"
+                    v-bind:show-overflow-tooltip="true"
+                    label="入库时间"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{minuteFormat(scope.row.createTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="salerName"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="客户姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="directorName"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="所属总监"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="flowId"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="开发流程"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<lz-dic-txt dic-type="FLOW_CODE" :dic-code="scope.row.flowId"></lz-dic-txt>
+                	</template>
+                </el-table-column>
+            
+                
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="searchResourcePageData.current"
+                           :page-sizes="[5, 20, 50]"
+                           :page-size="searchResourcePageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="searchResourcePageData.iTotalRecords"
+                           @size-change="searchResourceList"
+                           @current-change="searchResourceList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+</el-dialog>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <el-dialog title="钉钉ID图片提示" size="tiny" :visible.sync="dingIdPngVisible">
+        <img src="/img/dingId.png" width="100%" alt="钉钉ID图片提示" />
+    </el-dialog>
+<!---------------------------弹出详情窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script>
+var vuePage = new Vue({
+    el: '#app',
+    data: {
+    	logOutUrl:	"/sys/logout",
+    	userUrl:	"sys/user/read/current",
+    	changePasswordUrl:	"sys/user/update/password",
+    	performanceUrl: "crm/signApply/performance/list",
+    	user:{},
+    	performance : {},
+    	//是否市场部人员
+        isBusinessMan:false,
+    	//是否保险业务员
+        isSaler:false,
+        searchUrl:"crm/customer/search/list",
+        searchResourceUrl:"crm/resource/search/list",
+        searchVisible : false,
+        searchResourceVisible : false,
+        searchParams: {wechatNo:'',mobile:'',name:''},
+        searchResourceParams: {mobile:'',name:''},
+        //全局搜索分页数据,其中包含分页信息与数据列表
+        searchPageData: {},
+        searchResourcePageData: {},
+        userEntity : {id:'',password:'',avatar:'',agentNo:'',phone:'',dingId:'',isAllotResource:'0'},
+        userRules: {
+    		password: [
+    			Vali.utf8mb4Len(false,20)
+    		],
+    		phone: [
+    			//{required: true, message: '此项不可为空', trigger: 'blur'},
+    			Vali.utf8mb4Len(false,20)
+    		]
+        },
+        existAgentNo: false,
+        dingIdPngVisible : false,
+        
+        //几条推广资源未处理
+        resourceInitNum:"",
+    },
+    created: function () {
+        var self = this;
+        self.readUser();
+        //self.readList();
+    },
+    methods: {
+    	//系统退出（返回登录页）
+    	logout:function(){
+            var self = this;
+            self.$confirm('您确定是要退出系统吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(function () {
+                self.$http.get(self.logOutUrl)
+                        .then(function (response) {
+                            window.location.href = '/s/login.html';
+                        });
+            }).catch(function () {
+            });
+        },
+        //获取个人业绩
+        /*readList : function () {
+        	var self = this;
+            self.$http.put(self.performanceUrl,{"id":"1000"})
+                    .then(function (response) {
+                        self.performance = response.data.data;
+                        //self.performance.week = response.data.data.week;
+                        //self.performance.month = response.data.data.month;
+                    });
+        },*/
+        //获取当前用户信息
+        readUser:function(){
+            var self = this;
+            self.$http.put(self.userUrl,{"id":"1000"})
+                    .then(function (response) {
+                        self.user = response.data.data;
+                        if (self.user.agentNo > 0) {
+                        	self.existAgentNo = true;
+                        }
+                        self.userEntity.id = self.user.id;
+                        self.userEntity.dingId = self.user.dingId;
+                        self.userEntity.isAllotResource = self.user.isAllotResource;
+                        self.userEntity.allotResourceNum = self.user.allotResourceNum;
+                        self.userEntity.allotResourceMax = self.user.allotResourceMax;
+                        self.userEntity.rewardResourceNum = self.user.rewardResourceNum;
+                        if (self.user.userGroup == 10000000 
+                        		|| self.user.userGroup == 88002001
+                        		|| self.user.userGroup == 88002002
+                        		|| self.user.userGroup == 88002003
+                        		|| self.user.userGroup == 88002005) {
+                        	self.isBusinessMan = true;
+						}
+                        if (self.user.userGroup == 88002001) {
+                        	self.isSaler = true;
+                        	self.queryResourceInitNum();
+						}
+                        //全局变量【web存储】，已移至index.html页面处理
+                        //sessionStorage.setItem("user", JSON.stringify(response.data.data));
+                    });
+        },
+        //修改密码
+        change : function () {
+            var self = this;
+        	if (self.userEntity) {
+                self.$confirm('您确定要修改吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    self.$http.post(self.changePasswordUrl, self.userEntity)
+                          .then(function (response) {
+                          //self.$alert("修改成功");
+                          self.userEntity.password = "已更改";
+                          self.changeTimeout();
+                     });
+                }).catch(function(){});
+			} else {
+				self.$alert("未知错误");
+        	}
+    	},
+    	changeTimeout : function () {
+    		var self = this;
+    		setTimeout( () => {
+    			self.userEntity.password = "";
+    		},5000);
+    	},
+    	//全局搜索查询
+        /*searchDialog : function () {
+    		var self = this;
+    		self.searchVisible = true;
+    	},*/
+        searchList: function () {
+            var params = {
+            	asc: false,
+                orderBy: "enter_time",
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 5)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchParams) {
+            	if (typeof this.searchParams[item] == 'boolean'){
+                    params[item] = this.searchParams[item];
+                }else if (this.searchParams[item] != "") {
+                    params[item] = this.searchParams[item];
+                }
+            }
+            this.$http.put(this.searchUrl, params)
+                    .then(function (response) {
+                        this.searchPageData = response.data;
+                        this.searchVisible = true;
+                    });
+        },
+        searchResourceList: function () {
+            var params = {
+            	asc: false,
+                orderBy: "enter_time",
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 5)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchResourceParams) {
+            	if (typeof this.searchResourceParams[item] == 'boolean'){
+                    params[item] = this.searchResourceParams[item];
+                }else if (this.searchResourceParams[item] != "") {
+                    params[item] = this.searchResourceParams[item];
+                }
+            }
+            this.$http.put(this.searchResourceUrl, params)
+                    .then(function (response) {
+                        this.searchResourcePageData = response.data;
+                        this.searchResourceVisible = true;
+                    });
+        },
+        handleAvatarSuccess : function (res, file) {
+        	var self = this;
+            self.userEntity.avatar = "/upload/" + res.fileName[0];
+            self.$http.post(self.changePasswordUrl, self.userEntity)
+            .then(function (response) {
+            	self.user = response.data.data;
+            	self.$notify({
+			          title: '上传头像',
+			          message: '又是一道亮丽的风景',
+			          type: 'success',
+			          duration: 3000
+			        });
+            });
+        },
+        beforeAvatarUpload : function (file) {
+        },
+       createRelUrl: function (src) {
+           if (window.URL) {
+               return window.URL.createObjectURL(src);
+           } else if (window.webkitURL) {
+               return window.webkitURL.createObjectURL(src);
+           } else {
+               return "";
+           }  
+       },
+       dingIdPng : function () {
+    	   this.dingIdPngVisible = true;
+       },
+     //启用停用分配
+       isAllot : function (entityId,isAllotResource) {
+       	var self = this;
+       	/* var d = new Date();
+       	var week = d.getDay();//（0-6）
+       	if (week == 0 || week == 5 || week == 6) {
+       		self.$notify({
+		          title: '警告',
+		          message: '当前不能操作资源分配，如需修改，请联系您的经理',
+		          type: 'warning',
+		          duration: 2000
+		        });
+       		return;
+		} */
+       	self.entity = {};
+       	self.entity.id = entityId;
+       	self.entity.isAllotResource = isAllotResource=="1"?"0":"1";
+       	self.$http.post('sys/user/updateInfo', self.entity)
+           .then(function (response) {
+           	var result = response.data.data;
+				self.userEntity = result;//所有保存，添加此行，以避免重复提交
+				self.userEntity.password = "";
+				//分配按钮处理
+           });
+       },
+       isAllotFormat : function (isAllotResource) {
+       	return isAllotResource=="1"?"正在分配推广资源":"已暂停分配推广资源";
+       },
+       isAllotPlain : function (isAllotResource) {
+       	return isAllotResource=="1"?false:true;
+       },
+       queryResourceInitNum : function () {
+    	   this.$http.put("crm/resource/resourceInitNum")
+           .then(function (response) {
+				var result = response.data.data;
+				if (result && result > 0) {
+					this.resourceInitNum = "有"+result+"条新推广资源，你还没有营销！！！！！！！";
+				}
+           });
+       },
+        
+    }
+});
+</script>
+</html>

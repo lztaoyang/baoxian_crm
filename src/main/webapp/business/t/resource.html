@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>推广资源分配表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+	<el-row style="margin:10px 10px 0px 10px;">
+        <el-col :span="8">
+            <el-button size="small" type="warning" @click="showAllotDialog">资源调配</el-button>
+        </el-col>
+    </el-row>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------弹出资源调配窗口 开始----------------------------------------------------------------->
+    <el-dialog title="市场部" :visible.sync="allotVisible">
+          <el-row>
+		  	<el-col :span="12">
+		        <el-card class="box-card">
+		           	<el-tree ref="userTree" :data="userTreeData" node-key="id" accordion
+                 show-checkbox="false" highlight-current @node-click="treeNodeClick"></el-tree>
+		        </el-card>
+		    </el-col>
+		    <el-col :span="12">
+		        <el-card class="box-card">
+		            <el-row>
+                    <el-table id="12324"
+                              :data="deptPageData.data"
+                              ref="entityTable"
+                              max-height="450"
+                              :row-key="key"
+                              empty-text="-"
+                              append="加载中..."
+                              :row-style="{'font-size':'13px'}"
+                              style="width: 100%"
+                              ref="singleTable"
+                              highlight-current-row
+                              @current-change="allotCurrentChange">
+                        <el-table-column v-for="item in tableColumns"
+                                         :prop="item.prop"
+                                         min-width="100"
+                                         v-bind:show-overflow-tooltip="true"
+                                         :label="item.label">
+                        </el-table-column>
+                    </el-table>
+                </el-row>
+		        </el-card>
+		    </el-col>
+		    </el-row>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="allotVisible = false">取 消</el-button>
+            <el-button size="small" type="info" @click="allot">分配</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  max-height="450px"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+        >
+            <el-table-column
+                    type="selection"
+                    prop="id"
+            >
+            </el-table-column>
+            
+            <el-table-column
+                    prop="executer"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="执行人"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createrTime"
+                    min-width="130"
+                    v-bind:show-overflow-tooltip="true"
+                    label="创建日期"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{monthMinuteFormat(scope.row.createrTime)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="name"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="姓名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机号"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="content"
+                    min-width="300"
+                    v-bind:show-overflow-tooltip="true"
+                    label="内容"
+                    align="center"
+                    >
+                    <template scope="scope">
+                    	<span>{{contentFormat(scope.row.content)}}</span>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="planName"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="计划名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="planCode"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="专题名"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="sourceUrl"
+                    min-width="300"
+                    v-bind:show-overflow-tooltip="true"
+                    label="来源地址"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="refererUrl"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="referer来源"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="userAgent"
+                    min-width="300"
+                    v-bind:show-overflow-tooltip="true"
+                    label="UserAgent浏览器"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="channel"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="渠道"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="ip"
+                    min-width="230"
+                    v-bind:show-overflow-tooltip="true"
+                    label="ip"
+                    align="center"
+                    >
+                </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;float:right;">
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="/business/t/resource.js"></script>
+</html>

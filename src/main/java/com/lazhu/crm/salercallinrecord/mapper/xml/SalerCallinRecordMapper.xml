@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.salercallinrecord.mapper.SalerCallinRecordMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_saler_callin_record
+		<where>
+			<if test="cm.mobile != null and cm.mobile != ''">
+			    and mobile = #{cm.mobile}
+			</if>
+			<if test="cm.salerId != null and cm.salerId != ''">
+				and saler_id = #{cm.salerId}
+			</if>
+			<if test="cm.salerName != null and cm.salerName != ''">
+			    and saler_name like concat(concat('%',#{cm.salerName}),'%')
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+				and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.managerName != null and cm.managerName != ''">
+			    and manager_name like concat(concat('%',#{cm.managerName}),'%')
+			</if>
+			<if test="cm.directorId != null and cm.directorId != ''">
+				and director_id = #{cm.directorId}
+			</if>
+			<if test="cm.directorName != null and cm.directorName != ''">
+			    and director_name like concat(concat('%',#{cm.directorName}),'%')
+			</if>
+			<if test="cm.ministerId != null and cm.ministerId != ''">
+				and minister_id = #{cm.ministerId}
+			</if>
+			<if test="cm.ministerName != null and cm.ministerName != ''">
+			    and minister_name like concat(concat('%',#{cm.ministerName}),'%')
+			</if>
+			<if test="cm.callTime != null and cm.callTime != ''">
+				and TO_DAYS(call_time) = TO_DAYS(#{cm.callTime})
+			</if>
+			<if test="cm.isThrough != null">
+				and is_through = #{cm.isThrough}
+			</if>
+			<if test="cm.ringLength != null and cm.ringLength != ''">
+				and ring_length = #{cm.ringLength}
+			</if>
+			<if test="cm.callFile != null and cm.callFile != ''">
+				and call_file = #{cm.callFile}
+			</if>
+			<if test="cm.callLength != null and cm.callLength != ''">
+				and call_length = #{cm.callLength}
+			</if>
+			<if test="cm.throughId != null and cm.throughId != ''">
+				and through_id = #{cm.throughId}
+			</if>
+			<if test="cm.throughName != null and cm.throughName != ''">
+			    and through_name like concat(concat('%',#{cm.throughName}),'%')
+			</if>
+			<if test="cm.throughRecord != null and cm.throughRecord != ''">
+			    and through_record like concat(concat('%',#{cm.throughRecord}),'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByCallFile" resultType="java.lang.Long">
+		select id from crm_saler_callin_record 
+		where call_file = #{callFile} and enable_ = 1
+		order by create_time desc
+	</select>
+	
+	<select id="queryMaxAnswerId" resultType="java.lang.Long">
+		select max(answer_id) from crm_saler_callin_record
+	</select>
+	
+	<select id="queryMaxNoanswerId" resultType="java.lang.Long">
+		select max(noanswer_id) from crm_saler_callin_record
+	</select>
+	
+	<select id="queryServerRecordIsNull" resultType="java.lang.Long">
+		select id from crm_saler_callin_record where answer_id is not null and call_file is null
+	</select>
+	
+</mapper>

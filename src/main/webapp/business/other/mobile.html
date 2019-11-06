@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>客户联系方式表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<!---------------------------页头导航 开始----------------------------------------------------------------------->
+    <el-row style="margin:20px 10px 10px 10px;">
+    </el-row>
+    <hr/>
+<!---------------------------页头导航 结束----------------------------------------------------------------------->
+<!---------------------------查询面板 开始----------------------------------------------------------------------->
+    <el-row>
+		<el-form :inline="true" :model="searchParams" label-position="right" style="margin-bottom: 0px" >
+			<el-row style="margin-left:20px;">
+	    		<el-form-item label="资源ID" style="font-size: 13px;" prop="customerId">
+		    		<el-input size="small" style="width:150px;" v-model="searchParams.customerId" placeholder="资源ID" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="手机号码" style="font-size: 13px;" prop="mobile">
+		    		<el-input size="small" style="width:150px;" v-model="searchParams.mobile" placeholder="手机号码" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="手机掩码" style="font-size: 13px;" prop="fuzzyMobile">
+		    		<el-input size="small" style="width:150px;" v-model="searchParams.fuzzyMobile" placeholder="手机掩码" ></el-input>
+		    	</el-form-item>
+	    		<el-form-item label="MD5加密" style="font-size: 13px;" prop="md5Mobile">
+		    		<el-input size="small" style="width:325px;" v-model="searchParams.md5Mobile" placeholder="MD5加密" ></el-input>
+		    	</el-form-item>
+			</el-row>
+			<el-row style="margin-left:20px;">
+                <el-form-item>
+                    <el-button size="small" type="info" @click="readList">查询</el-button>
+                </el-form-item>
+            </el-row>
+		</el-form>
+    </el-row>
+<!---------------------------查询面板 结束----------------------------------------------------------------------->
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  highlight-current-row
+                  max-height="456"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+        >
+            
+            <el-table-column
+                    prop="customerId"
+                    min-width="200"
+                    v-bind:show-overflow-tooltip="true"
+                    label="资源ID"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="fuzzyMobile"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="手机掩码"
+                    align="center"
+                    >
+                    <template scope="scope">
+						<el-popover trigger="hover" placement="right">
+							<p>{{ scope.row.mobile }}</p>
+							<div slot="reference" class="name-wrapper">
+								<el-tag>{{ scope.row.fuzzyMobile }}</el-tag>
+							</div>
+						</el-popover>
+					</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="md5Mobile"
+                    min-width="400"
+                    v-bind:show-overflow-tooltip="true"
+                    label="MD5加密"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="createTime"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="创建时间"
+                    align="center"
+                    >
+                    
+                </el-table-column>
+            
+            <el-table-column
+                    label="操作"
+                    width="100"
+                    align="center">
+                <template scope="scope">
+                	<el-button size="small" type="warning" @click="showEditDialog(scope.row.id)">编辑</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-row>
+    <!-- 表尾 开始-->
+    <el-row style="margin:10px 10px 0px 10px;">
+    	<el-col :span="8">
+            <el-button size="small" type="success" @click="showAddDialog">新增</el-button>
+        </el-col>
+        <el-col :span="16" class="text-right">
+        	<!-- 分页 -->
+            <el-pagination ref="entityTablePage"
+                           :current-page="pageData.current"
+                           :page-sizes="[10, 50, 100]"
+                           :page-size="pageData.size"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageData.iTotalRecords"
+                           @size-change="readList"
+                           @current-change="readList"
+            >
+            </el-pagination>
+        </el-col>
+    </el-row>
+    <!-- 表尾 结束-->
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+    <hr style="margin:0px ;"/>
+<!---------------------------弹出编辑窗口 开始----------------------------------------------------------------------->
+    <el-dialog :title="entity.id?'编辑':'新增'" :visible.sync="editFormVisible">
+        <el-form ref="editForm" :model="entity" :rules="rules">
+        <el-input size="small" v-model="entity.id" v-show="false" ></el-input>
+    	<el-col :span="24">
+        <el-form-item label="资源ID" label-width="100px" prop="customerId">
+    		<el-input type="number" size="small" v-model="entity.customerId" placeholder="资源ID" ></el-input>
+        </el-form-item>
+        </el-col>
+    	<el-col :span="24">
+        <el-form-item label="手机号码" label-width="100px" prop="mobile" v-show="entity.id == null">
+    			<el-input size="small" v-model="entity.mobile" placeholder="手机号码" ></el-input>
+        </el-form-item>
+        </el-col>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="editFormVisible = false">取 消</el-button>
+            <el-button size="small" type="info"  @click="save">保 存</el-button>
+        </div>
+    </el-dialog>
+<!---------------------------弹出编辑窗口 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script type="text/javascript">
+var vuePage = new Vue({
+    el: '#app',
+    data: {
+    	sourceUrl:"crm/mobile",
+        //是否显示编辑窗口
+        editFormVisible: false,
+        //查询参数
+        searchParams: {customerId:'',mobile:'',fuzzyMobile:'',md5Mobile:'',rsaMobile:'',},
+        //分页数据,其中包含分页信息与数据列表
+        pageData: {},
+        //当前操作的实体（编辑/新增）
+        entity: {customerId:'',mobile:'',fuzzyMobile:'',md5Mobile:'',rsaMobile:'',},
+        //表单校验规则 api:https://github.com/yiminghe/async-validator
+        rules: {
+    		mobile: [
+    		Vali.long()
+    	],
+        }
+    },
+    created: function () {
+        var self = this;
+        self.readList();
+    },
+    methods: {
+        //查询
+        readList: function () {
+            var params = {
+                asc: false,
+                orderBy: "id",
+                pageNum: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalCurrentPage : 1),
+                pageSize: (this.$refs.entityTablePage ? this.$refs.entityTablePage.internalPageSize : 10)
+            };
+            //将查询条件合并到请求参数中
+            for (var item in this.searchParams) {
+            	if (typeof this.searchParams[item] == 'boolean'){
+                    params[item] = this.searchParams[item];
+                }else if (this.searchParams[item] != "") {
+                    params[item] = this.searchParams[item];
+                }
+            }
+            this.$http.put(this.sourceUrl+'/read/list', params)
+                    .then(function (response) {
+                        this.pageData = response.data;
+                    });
+        },
+        //弹出新增窗口
+        showAddDialog: function () {
+            this.editFormVisible = true;
+            for (var item in this.entity) {
+                this.entity[item] = "";
+            }
+        },
+        //弹出编辑窗口
+        showEditDialog: function (entityId) {
+            this.$http.put(this.sourceUrl+'/read/detail', {id: entityId})
+                    .then(function (response) {
+                        this.entity = response.data.data;
+                        this.editFormVisible = true;
+                    });
+        },
+        //保存
+        save: function () {
+            var self = this;
+            self.$refs["editForm"].validate(function(valid){
+                if (valid) {//校验通过
+                    self.$http.post(self.sourceUrl, self.entity)
+                            .then(function (response) {
+                                var result = response.data.data;
+                                self.editFormVisible = false;
+                                if (self.entity.id) {//修改
+                                    for (var i = 0; i < self.pageData.data.length; i++) {
+                                        if (self.pageData.data[i].id === result.id) {
+                                            Vue.set(self.pageData.data, i, result);
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    self.pageData.data.unshift(result);
+                                }
+                            });
+                } else {
+                    self.$message({
+                        message: '请按要求输入内容',
+                        type: 'warning'
+                    });
+                    return false;
+                }
+            });
+
+        },
+        copyMobile : function () {
+        	const range = document.createRange();
+        	var mobile = document.getElementById('mobile').innerHTML;
+            range.selectNode(document.getElementById('mobile'));
+
+            const selection = window.getSelection();
+            if(selection.rangeCount > 0) selection.removeAllRanges();
+            selection.addRange(range);
+
+            document.execCommand('copy');
+        	this.detailFormVisible = false;
+        	this.$notify({
+        		type: 'success',
+                title: '提示',
+                message: mobile+'已复制好，可贴粘。',
+                duration: 2000
+              });
+        }
+    }
+});
+</script>
+</html>

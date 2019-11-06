@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.serverrecord.mapper.ServerRecordMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_server_record
+		<where>
+			<if test="cm.customerId != null and cm.customerId != ''">
+				and customer_id = #{cm.customerId}
+			</if>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.serverRecord != null and cm.serverRecord != ''">
+			    and server_record like concat(concat('%',#{cm.serverRecord}),'%')
+			</if>
+			<if test="cm.serverName != null and cm.serverName != ''">
+			    and server_name like concat(concat('%',#{cm.serverName}),'%')
+			</if>
+			<if test="cm.type != null and cm.type != ''">
+			    and type like concat(concat('%',#{cm.type}),'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+		select id from crm_server_record 
+		where customer_id = #{customerId} and enable_ = 1
+		order by create_time desc
+	</select>
+</mapper>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>推广资源分配表管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/eui.1.3.0.css">
+    <link rel="stylesheet" href="/css/bootstrap.3.3.7.css">
+    <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="css/docs.css">-->
+    <!--<script src="js/jquery.min.1.12.4.js"></script>-->
+    <script src="/js/lib/vue.2.3.2.js"></script>
+    <script src="/js/lib/vuex.2.3.1.js"></script>
+    <script src="/js/lib/vue-resource.1.3.1.js"></script>
+    <script src="/js/lib/eui.1.3.0.js"></script>
+    <script src="/js/lib/vue-html5-editor.js"></script>
+    <script src="/js/lib/common.js"></script>
+    <script src="/js/lib/vue-component-dic.js"></script>
+</head>
+<body>
+<div id="app">
+<el-row style="margin:10px 10px 0px 10px;">
+	<el-form :inline="true" :model="searchParams" label-position="right" style="margin: 6px" >
+		<el-form-item label="经理" style="font-size: 13px;" prop="parentId">
+			<lz-dic-select style="width:100px;" dic-type="MANAGER" v-model="searchParams.parentId"></lz-dic-select>
+		</el-form-item>
+		<el-form-item>
+			<el-button size="small" type="info" @click="readList">查询</el-button>
+			<!-- <el-button size="small" @click="updateUp">升级成交客户</el-button> -->
+		</el-form-item>
+		<el-form-item style="float:right;margin-right:10px;" v-show="isAdmin">
+        	<el-button size="small" type="danger" @click="allotResourceStop">停止所有人分配</el-button>
+        </el-form-item>
+		<el-form-item style="float:right;margin-right:50px;" v-show="isAdmin">
+			<el-tag type="warning">调节说明：{{ carm }}</el-tag>
+			<el-button-group>
+        		<el-button size="small" type="warning" @click="allotResourceMax">修改所有人分配数</el-button>
+        		<el-button size="small" :plain="isAutoPlain(carmAuto.valueString)" type="warning" @click="isAutoClick()">{{ isAutoFormat(carmAuto.valueString) }}</el-button>
+        	</el-button-group>
+        </el-form-item>
+	</el-form>
+</el-row>
+<!---------------------------数据表格 开始----------------------------------------------------------------------->
+    <el-row style="margin:10px 10px 0px 10px;">
+        <el-table id="12324"
+                  :data="pageData.data"
+                  ref="entityTable"
+                  border
+                  max-height="450px"
+                  row-key="id"
+                  empty-text="-"
+                  append="加载中..."
+                  :row-style="{'font-size':'13px'}"
+                  style="width: 100%"
+                  @selection-change="selectionChange"
+        >
+            <el-table-column type="index" width="40" align="center"></el-table-column>
+            
+            <el-table-column
+                    prop="managerName"
+                    min-width="90"
+                    v-bind:show-overflow-tooltip="true"
+                    label="经理"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="account"
+                    min-width="90"
+                    v-bind:show-overflow-tooltip="true"
+                    label="业务员"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="dingId"
+                    min-width="180"
+                    v-bind:show-overflow-tooltip="true"
+                    label="钉钉号"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-input style="width:160px;" size="small" v-model="scope.row.dingId" placeholder="钉钉号"></el-input>
+	                </template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="dingId"
+                    min-width="160"
+                    v-bind:show-overflow-tooltip="true"
+                    label="钉钉号"
+                    align="center"
+                    v-else="isAdmin"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="allotResourceNum"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="当前分配数"
+                    align="center"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="controlAllotResourceNum"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="控制分配数"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-input type="number" style="width:100px;" size="small" v-model="scope.row.controlAllotResourceNum"></el-input>
+	                </template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="allotResourceMax"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="最大分配数"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-input type="number" style="width:70px;" size="small" v-model="scope.row.allotResourceMax"></el-input>
+						<el-button size="small" style="width:50px;" type="info" @click="changeNum(scope.row.id,scope.row.dingId,scope.row.agentNo,scope.row.allotResourceMax,scope.row.controlAllotResourceNum)">保存</el-button>
+	                </template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="allotResourceMax"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="最大分配数"
+                    align="center"
+                    v-else="isAdmin"
+                    >
+                </el-table-column>
+            
+            <!-- <el-table-column
+                    prop="overRewardResourceNum"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="剩余奖励数"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                </el-table-column>
+            
+            <el-table-column
+                    prop="rewardResourceNum"
+                    min-width="120"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日奖励数"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-input type="number" style="width:70px;" size="small" v-model="scope.row.rewardResourceNum"></el-input>
+						<el-button size="small" :plain="true" style="width:50px;" type="info" @click="changeReward(scope.row.id,scope.row.rewardResourceNum)">修改</el-button>
+	                </template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="rewardResourceNum"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="今日奖励数"
+                    align="center"
+                    v-else="isAdmin"
+                    >
+                </el-table-column> -->
+            
+            <el-table-column
+                    prop="isAllotResource"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否分配资源"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-button size="small" :plain="isAllotPlain(scope.row.isAllotResource)" type="success" @click="isAllot(scope.row.id,scope.row.isAllotResource)">{{ isAllotFormat(scope.row.isAllotResource) }}</el-button>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="isAllotResource"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否分配资源"
+                    align="center"
+                    v-if="isManager"
+                    >
+                    <template scope="scope">
+						<el-button size="small" :plain="isAllotPlain(scope.row.isAllotResource)" type="success" @click="isAllot(scope.row.id,scope.row.isAllotResource)">{{ isAllotFormat(scope.row.isAllotResource) }}</el-button>
+                	</template>
+                </el-table-column>
+            
+            <el-table-column
+                    prop="disableAllotResource"
+                    min-width="100"
+                    v-bind:show-overflow-tooltip="true"
+                    label="是否禁止分配"
+                    align="center"
+                    v-if="isAdmin"
+                    >
+                    <template scope="scope">
+						<el-button size="small" :plain="disableAllotPlain(scope.row.disableAllotResource)" type="danger" @click="disableAllot(scope.row.id,scope.row.disableAllotResource)">{{ disableAllotFormat(scope.row.disableAllotResource) }}</el-button>
+                	</template>
+                </el-table-column>
+            
+        </el-table>
+    </el-row>
+    <el-dialog title="修改所有人的最大分配数" :visible.sync="allotResourceMaxVisible">
+    	<el-row style="margin-top:10px;">
+			<el-radio-group v-model="allotResourceMaxValue" @change="maxValueChange">
+			    <el-radio-button label="0">归零</el-radio-button>
+			    <el-radio-button label="3">3个</el-radio-button>
+			    <el-radio-button label="5">5个</el-radio-button>
+			    <el-radio-button label="6">6个</el-radio-button>
+			    <el-radio-button label="7">7个</el-radio-button>
+			    <el-radio-button label="8">8个</el-radio-button>
+			    <el-radio-button label="9">9个</el-radio-button>
+			    <el-radio-button label="10">10个</el-radio-button>
+			    <el-radio-button label="13">13个</el-radio-button>
+			</el-radio-group>
+    	</el-row>
+    	<el-row v-show="showFree" style="margin-top:10px;">
+    		<el-col :span="22">
+			<el-slider v-model="allotResourceMaxValue" show-input :max="30">
+			</el-slider>
+			</el-col>
+    	</el-row>
+    	<el-row>
+			<el-button v-show="showMore" size="small" @click="showFree=true,showMore=false" style="float:left;margin:30px 0px 10px 0px;">自由选择</el-button>
+			<el-button size="large" type="warning" @click="changeAllotResourceMax" style="float:right;margin:16px 50px 10px 0px;">确认</el-button>
+    	</el-row>
+    </el-dialog>
+<!---------------------------数据表格 结束----------------------------------------------------------------------->
+</div>
+</body>
+<script src="/business/t/saler.js"></script>
+</html>

@@ -1,0 +1,291 @@
+-- DROP TRIGGER DEL_RESOURCE
+
+CREATE TRIGGER DEL_RESOURCE BEFORE DELETE ON crm_resource FOR EACH ROW
+BEGIN
+	INSERT INTO crm_resource_leave (
+		id,
+		allot_id,
+		demand,
+		flow_id,
+		old_flow_id,
+		`name`,
+		from_info,
+		enter_time,
+		wechat_no,
+		qq,
+		fuzzy_mobile,
+		md5_mobile,
+		phone,
+		birthday,
+		age,
+		sex,
+		duty,
+		province,
+		city,
+		saler_id,
+		saler_name,
+		manager_id,
+		manager_name,
+		director_id,
+		director_name,
+		minister_id,
+		minister_name,
+		remark_,
+		enable_,
+		create_time,
+		create_by,
+		update_time,
+		update_by,
+		extract_num,
+		extract_time,
+		retain_time,
+		loss_time,
+		is_lose,
+		lose_num,
+		plan_code,
+		first_call_time,
+		last_call_time,
+		last_call_record,
+		is_talk,
+		talk_time,
+		black_remark,
+		keywords
+	)
+VALUES
+	(
+		old.id,
+		old.allot_id,
+		old.demand,
+		old.flow_id,
+		old.old_flow_id,
+		old.`name`,
+		old.from_info,
+		old.enter_time,
+		old.wechat_no,
+		old.qq,
+		old.fuzzy_mobile,
+		old.md5_mobile,
+		old.phone,
+		old.birthday,
+		old.age,
+		old.sex,
+		old.duty,
+		old.province,
+		old.city,
+		old.saler_id,
+		old.saler_name,
+		old.manager_id,
+		old.manager_name,
+		old.director_id,
+		old.director_name,
+		old.minister_id,
+		old.minister_name,
+		old.remark_,
+		old.enable_,
+		old.create_time,
+		old.create_by,
+		old.update_time,
+		old.update_by,
+		old.extract_num,
+		old.extract_time,
+		old.retain_time,
+		old.loss_time,
+		old.is_lose,
+		old.lose_num,
+		old.plan_code,
+		old.first_call_time,
+		old.last_call_time,
+		old.last_call_record,
+		old.is_talk,
+		old.talk_time,
+		old.black_remark,
+		old.keywords
+	);
+
+INSERT INTO crm_saler_record_leave (
+	id,
+	customer_id,
+	customer_name,
+	customer_mobile,
+	fuzzy_mobile,
+	server_record,
+	time_length,
+	test_time_length,
+	create_time,
+	test_update_time,
+	update_time,
+	call_file,
+	server_id,
+	server_name,
+	server_mobile,
+	type,
+	agent_no,
+	direct,
+	sync_num,
+	manager_id,
+	remark_,
+	enable_,
+	create_by,
+	update_by,
+	flow_id,
+	from_info,
+	resource_time
+) SELECT
+	id,
+	customer_id,
+	customer_name,
+	customer_mobile,
+	fuzzy_mobile,
+	server_record,
+	time_length,
+	test_time_length,
+	create_time,
+	test_update_time,
+	update_time,
+	call_file,
+	server_id,
+	server_name,
+	server_mobile,
+	type,
+	agent_no,
+	direct,
+	sync_num,
+	manager_id,
+	remark_,
+	enable_,
+	create_by,
+	update_by,
+	flow_id,
+	from_info,
+	resource_time
+FROM
+	crm_saler_record
+WHERE
+	customer_id = old.id;
+
+DELETE
+FROM
+	crm_saler_record
+WHERE
+	customer_id = old.id;
+
+
+END;
+
+
+-- DROP TRIGGER AFTER_INSER_RECORD
+CREATE TRIGGER AFTER_INSER_RECORD BEFORE INSERT ON crm_saler_record FOR EACH ROW
+BEGIN
+	INSERT INTO crm_saler_record_day (
+		id,
+		customer_id,
+		customer_name,
+		customer_mobile,
+		fuzzy_mobile,
+		server_record,
+		time_length,
+		test_time_length,
+		create_time,
+		test_update_time,
+		update_time,
+		call_file,
+		server_id,
+		server_name,
+		server_mobile,
+		type,
+		agent_no,
+		direct,
+		sync_num,
+		manager_id,
+		remark_,
+		enable_,
+		create_by,
+		update_by,
+		flow_id,
+		from_info,
+		resource_time
+	)
+VALUES
+	(
+		new.id,
+		new.customer_id,
+		new.customer_name,
+		new.customer_mobile,
+		new.fuzzy_mobile,
+		new.server_record,
+		new.time_length,
+		new.test_time_length,
+		new.create_time,
+		new.test_update_time,
+		new.update_time,
+		new.call_file,
+		new.server_id,
+		new.server_name,
+		new.server_mobile,
+		new.type,
+		new.agent_no,
+		new.direct,
+		new.sync_num,
+		new.manager_id,
+		new.remark_,
+		new.enable_,
+		new.create_by,
+		new.update_by,
+		new.flow_id,
+		new.from_info,
+		new.resource_time
+	);
+
+
+END;
+
+
+-- DROP TRIGGER AFTER_UPDATE_RECORD
+CREATE TRIGGER AFTER_UPDATE_RECORD BEFORE UPDATE ON crm_saler_record FOR EACH ROW
+BEGIN
+	UPDATE crm_saler_record_day
+SET customer_id = new.customer_id,
+ customer_name = new.customer_name,
+ customer_mobile = new.customer_mobile,
+ fuzzy_mobile = new.fuzzy_mobile,
+ server_record = new.server_record,
+ time_length = new.time_length,
+ test_time_length = new.test_time_length,
+ create_time = new.create_time,
+ test_update_time = new.test_update_time,
+ update_time = new.update_time,
+ call_file = new.call_file,
+ server_id = new.server_id,
+ server_name = new.server_name,
+ server_mobile = new.server_mobile,
+ type = new.type,
+ agent_no = new.agent_no,
+ direct = new.direct,
+ sync_num = new.sync_num,
+ manager_id = new.manager_id,
+ remark_ = new.remark_,
+ enable_ = new.enable_,
+ create_by = new.create_by,
+ update_by = new.update_by,
+ flow_id = new.flow_id,
+ from_info = new.from_info,
+ resource_time = new.resource_time
+WHERE
+	id = new.id;
+
+
+END;
+
+
+CREATE EVENT CLEAR_RECORD_DAY
+  ON SCHEDULE EVERY 1 DAY 
+  STARTS  '2018-04-14 01:00:00'  ON COMPLETION NOT PRESERVE  
+  ENABLE  
+  DO begin
+
+	DELETE
+FROM
+	crm_saler_record_day;
+
+
+end

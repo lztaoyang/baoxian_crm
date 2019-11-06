@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.t.mobileexport.mapper.ResourceMobileExportMapper">
+
+	<select id="queryMobileList" resultType="java.util.Map">
+		select md5_mobile as sha_mobile from t_resource_allot
+		<where>
+			<if test="par.channel != null and par.channel != ''">
+			and channel = #{par.channel}
+			</if>
+			<if test="par.flowId != null and par.flowId.size > 0">
+			and resource_flow in
+				<foreach collection="par.flowId" index="index" item="item" open="(" separator="," close=")">  
+			        #{item}  
+			    </foreach>
+			</if>
+			<if test="par.startDate != null and par.startDate != ''">
+			and creater_time >= #{par.startDate}
+			</if>
+			<if test="par.endDate != null and par.endDate != ''">
+			<![CDATA[	and creater_time <= #{par.endDate}	]]>
+			</if>
+		</where>
+	</select>
+
+</mapper>

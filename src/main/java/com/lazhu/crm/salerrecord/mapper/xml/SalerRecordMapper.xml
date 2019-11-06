@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lazhu.crm.salerrecord.mapper.SalerRecordMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Long">
+		select id from crm_saler_record
+		<where>
+			<if test="cm.customerName != null and cm.customerName != ''">
+			    and customer_name like concat(concat('%',#{cm.customerName}),'%')
+			</if>
+			<if test="cm.customerMobile != null and cm.customerMobile != ''">
+			    and customer_mobile = #{cm.customerMobile}
+			</if>
+			<if test="cm.fuzzyMobile != null and cm.fuzzyMobile != ''">
+			    and fuzzy_mobile = #{cm.fuzzyMobile}
+			</if>
+			<if test="cm.serverRecord != null and cm.serverRecord != ''">
+			    and server_record like concat(concat('%',#{cm.serverRecord}),'%')
+			</if>
+			<if test="cm.timeLength != null and cm.timeLength != ''">
+				and time_length = #{cm.timeLength}
+			</if>
+			<if test="cm.callFile != null and cm.callFile != ''">
+			    and call_file like concat(concat('%',#{cm.callFile}),'%')
+			</if>
+			<if test="cm.serverId != null and cm.serverId != ''">
+				and server_id = #{cm.serverId}
+			</if>
+			<if test="cm.serverName != null and cm.serverName != ''">
+			    and server_name like concat(concat('%',#{cm.serverName}),'%')
+			</if>
+			<if test="cm.serverMobile != null and cm.serverMobile != ''">
+			    and server_mobile like concat(concat('%',#{cm.serverMobile}),'%')
+			</if>
+			<if test="cm.agentNo != null">
+			    and agent_no = #{cm.agentNo}
+			</if>
+			<if test="cm.managerId != null and cm.managerId != ''">
+			    and manager_id = #{cm.managerId}
+			</if>
+			<if test="cm.syncNum != null">
+			    and sync_num = #{cm.syncNum}
+			</if>
+			<if test="cm.isUpload != null">
+			    and is_upload = #{cm.isUpload}
+			</if>
+			<if test="cm.isTranslated != null">
+			    and is_translated = #{cm.isTranslated}
+			</if>
+			<if test="cm.translatedNum != null">
+			    and translated_num = #{cm.translatedNum}
+			</if>
+			<if test="cm.type != null and cm.type != ''">
+			    and type = #{cm.type}
+			</if>
+			<if test="cm.startTime != null and cm.startTime != ''">
+				and TO_DAYS(create_time) &gt;= TO_DAYS(#{cm.startTime})
+			</if>
+			<if test="cm.endTime != null and cm.endTime != ''">
+				and TO_DAYS(create_time) &lt;= TO_DAYS(#{cm.endTime})
+			</if>
+			<if test="cm.startTime2 != null and cm.startTime2 != ''">
+				and create_time &gt;= #{cm.startTime2}
+			</if>
+			<if test="cm.endTime2 != null and cm.endTime2 != ''">
+				and create_time &lt;= #{cm.endTime2}
+			</if>
+			<if test="cm.flowId != null">
+			    and flow_id = #{cm.flowId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryByCustomerId" resultType="java.lang.Long">
+		select id from crm_saler_record 
+		where customer_id = #{customerId}
+		order by create_time desc
+	</select>
+	
+	<!-- 30秒以上的成功通话记录 -->
+	<select id="queryRealByCustomerId" resultType="java.lang.Long">
+		select id from crm_saler_record 
+		where customer_id = #{customerId} and call_file is not null and type = 1 and time_length > 30
+		order by create_time desc
+	</select>
+	
+	<select id="queryRealByCustomerId1" resultType="java.lang.Long">
+		select id from crm_saler_record 
+		where customer_id = #{customerId} and call_file is not null and type = 1
+		order by create_time desc
+	</select>
+	
+	<select id="queryNewYearRealByCustomerId" resultType="java.lang.Long">
+		select id from crm_saler_record 
+		where customer_id = #{customerId} 
+			and call_file is not null 
+			and type = 1
+			and to_days(create_time) &gt;= to_days('2018-01-01')
+		order by create_time desc
+	</select>
+	
+	<select id="queryOnlyCallFile" resultType="java.lang.Long">
+		select id from crm_saler_record 
+		where enable_ = 1 and sync_num &lt;= 120 and call_file is not null
+		order by sync_num limit 100
+	</select>
+	
+	<select id="queryLikeCallName" resultType="java.lang.Long">
+		select id from crm_saler_record
+		where call_file like CONCAT('%',#{callName},'%')
+	</select>
+	
+</mapper>
